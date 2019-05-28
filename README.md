@@ -1,3 +1,3 @@
 # SeeYou Competition Scoring Scripts
 
-This repositroy contains SeeYou Scoring scripts.
+This repository contains SeeYou Scoring scripts.
