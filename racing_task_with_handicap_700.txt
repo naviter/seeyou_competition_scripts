@@ -1,5 +1,5 @@
 Program HHW2019_Racing_task_with_handicap;
-// Pushed to GIT
+// Pushed to GIT 
 // Version 7
 //   . Introduction of PEV starts
 //   . Support for new Annex A rules for minimum distance & 1000 points allocation per class
