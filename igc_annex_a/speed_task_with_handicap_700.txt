@@ -1,9 +1,6 @@
-Program HHW2019_Racing_task_with_handicap;
-// Pushed to GIT 
+Program AAT_task_with_handicap;
 // Version 7
-//   . Introduction of PEV starts
 //   . Support for new Annex A rules for minimum distance & 1000 points allocation per class
-// Version 6 made by Wojciech for EGC 2019 Turbia
 // Version 5.02, Date 25.04.2018
 //   . Bugfix in Fcr formula
 // Version 5.01, Date 03.04.2018
@@ -17,19 +14,25 @@ Program HHW2019_Racing_task_with_handicap;
 //   . Separate Tags with ; (required)
 //   . Example of the above two with 13:00:00 entered as start gate. DayTag: "Inteval=10;NumIntervals=7" gives possible start times at 13:00, 13:10, 13:20, 13:30, 13:40, 13:50 and 14:00
 //   . Buffer zone as a script parameter
+// Version 3.30, Date 10.01.2013
+//   . BugFix: Td exchanged with Task.TaskTime - This fix is critical for all versions of SeeYou later than SeeYou 4.2
 // Version 3.20, Date 04.07.2008
-//   . added warnings when Exit appears
+// Version 3.0
+//   . Added Hmin instead of H0. Score is now calculated using minimum handicap as opposed to maximum handicap as before
 // Version 3.01
 //   . Changed If Pilots[i].takeoff > 0 to If Pilots[i].takeoff >= 0. It is theoretically possible that one takes off at 00:00:00 UTC
-// Version 2.08, Date 13.08.2003
-
-const Time2Start = 600; // in seconds
+//   . Changed If Pilots[i].start > 0 to If Pilots[i].start >= 0. It is theoretically possible that one starts at 00:00:00 UTC
+// Version 3.10
+//   . removed line because it doesn't exist in Annex A 2006:
+// 			If Pilots[i].dis*Hmin/Pilots[i].Hcap < (2.0/3.0*D0) Then Pd := Pdm*Pilots[i].dis*Hmin/Pilots[i].Hcap/(2.0/3.0*D0);
+// Version 3.20
+//   . added warnings when Exit appears
 
 var
-  Dt, Td, n1, n2, N, D0, V0, T0, Dm,
+  Dt, n1, n2, N, D0, V0, T0, Hmin, Dm,
   Pm, Pdm, Pvm, Pn, F, Fcr, Day: Double;
   
-  D, D1, H, Dh, Dg, M, T, Dc, Pd, V, Vh, Pv, S : double;
+  D, D1, H, Dh, M, T, Dc, Pd, V, Vh, Pv, S : double;
   
   PmaxDistance, PmaxTime : double;
   
@@ -48,20 +51,6 @@ begin
 end;
 
 begin
-  // Who did not press PEV during the flight?
-  n := 0;
-  str := 'Did not press PEV: ';
-  for i := 0 to GetArrayLength(Pilots)-1 do 
-  begin
-    if (GetArrayLength(Pilots[i].Markers) = 0) and (Pilots[i].takeoff > 0) then
-	begin
-	  n := n+1;
-	  str := str + Pilots[i].CompID + ' ';
-	end;
-  end;
-  if n > 0 then
-    Info4 := str;
-  
   // Minimum Distance to validate the Day, depending on the class [meters]
   Dm := 100000;
   if Task.ClassID = 'club' Then Dm := 100000;
@@ -81,42 +70,6 @@ begin
   if Task.ClassID = '18_meter' Then D1 := 350000;
   if Task.ClassID = 'open' Then D1 := 350000;
   
-  // PILOT EVENT MARKER START PROCEDURE for Hahnweide 2019
-  // Rules: Press PEV once, your start time is fixed to a time 10 minutes later
-  for i := 0 to GetArrayLength(Pilots)-1 do 
-  begin
-    Pilots[i].Warning := '';
-    PilotPEVStartTime := 24*3600;
-    
-    If (GetArrayLength(Pilots[i].Markers) > 0) then
-    begin
-      PilotPEVStartTime := Pilots[i].Markers[0].Tsec + Time2Start;                    // Pilot's start time becomes the time 10 minutes after he pressed the PEV for the first time
-      if PilotPEVStartTime <= Pilots[i].start then
-      begin
-          Pilots[i].speed := Pilots[i].dis / (Pilots[i].finish-PilotPEVStartTime);    // Speed corrected for the start PEV start time
-          Pilots[i].sstart := PilotPEVStartTime;                 // Output for the results sheets
-
-	  end
-	  else // No starts found after PEV+10 minutes
-	  begin
-        Pilots[i].start := -1;  // start invalid
-  	  
-        Pilots[i].sstart := -1; // Output for the results sheets
-        if Pilots[i].takeoff > 0 then
-		  Pilots[i].Warning := 'No Start found after PEV+10 minutes'#10; // #10 equals Carriage Return - CR
-	  end;
-	end
-    else // No PEV markers in file
-	begin
-      Pilots[i].start := -1;  // PEV not found, start invalid
-	  Pilots[i].finish := -1; // PEV not found, finish invalid
-	  
-      Pilots[i].sstart := -1; // Output for the results sheets
-      if Pilots[i].takeoff > 0 then
-        Pilots[i].Warning := 'PEV missing - Event Marker not pressed'#10; // #10 equals Carriage Return - CR
-	end;
-  end;
-
   // DESIGNATED START PROCEDURE
   // Read Gate Interval info from DayTag. Return zero if Intervals and NumIntervals are unparsable or missing
   
@@ -179,7 +132,22 @@ begin
 	  Info1 := 'Warning: Number of competition pilots launched is zero';
   	Exit;
   end;
-  
+
+  If Task.TaskTime=0 Then begin
+	  Info1 := 'Error: Task time is zero!';
+  	Exit;
+  end;
+
+  // Outlanding Penalty (Distance reduction)
+  for i:=0 to GetArrayLength(Pilots)-1 do
+  begin
+    if Pilots[i].finish <= 0 Then
+    begin
+      M := 1.0/2.0 * Pilots[i].DisToGoal*Hmin/Pilots[i].Hcap;
+      // Pilots[i].dis := Pilots[i].dis - M; // Uncomment this line if you wish to use the Outlanding Penalty
+    end;
+  end;
+    
   D0 := 0;
   T0 := 0;
   V0 := 0;
@@ -192,12 +160,22 @@ begin
       
       // Find the highest finisher's speed of the day
       // and corresponding Task Time
-      If Pilots[i].finish >= 0 Then
+      If Pilots[i].speed*Hmin/Pilots[i].Hcap = V0 Then // in case of a tie, lowest Task Time applies
+      begin
+        If (Pilots[i].finish-Pilots[i].start) < T0 Then
+        begin
+          V0 := Pilots[i].speed*Hmin/Pilots[i].Hcap;
+          T0 := Pilots[i].finish-Pilots[i].start;
+        end;
+      end
+      Else
       begin
         If Pilots[i].speed*Hmin/Pilots[i].Hcap > V0 Then 
         begin
           V0 := Pilots[i].speed*Hmin/Pilots[i].Hcap;
           T0 := Pilots[i].finish-Pilots[i].start;
+          If T0 < Task.TaskTime Then  // If marking time is shorter than Task time, Task time must be used for computations
+            T0 := Task.TaskTime;
         end;
       end;
     end;
@@ -233,7 +211,7 @@ begin
   // Completion Ratio Factor
   Fcr := 1;
   If n1 > 0 then
-    Fcr := 1.2*(n2/n1)+0.6;
+	Fcr := 1.2*(n2/n1)+0.6;
   If Fcr>1 Then Fcr := 1;
 
   Pvm := 2.0/3.0 * (n2/N) * Pm;  // maximum available Speed Points for the Day
