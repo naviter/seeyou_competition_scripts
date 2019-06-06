@@ -6,7 +6,7 @@
 
 SeeYou will calculate the day performance items like Marking Distance, speed, start and finish times etc.  It is the responsibility of the script to determine how many POINTS are awarded for the achieved  performance. 
 
-SeeYou Competition scripts are implemented using the Innerfuse [Pascal Scripts] ( [http://www.carlo-kok.com](http://www.carlo-kok.com/)). They are very basic Pascal routines with some exceptions. 
+SeeYou Competition scripts are implemented using the Innerfuse [Pascal Scripts](http://www.carlo-kok.com](http://www.carlo-kok.com/). They are very basic Pascal routines with some exceptions. 
 
 You can write scripts in Notepad or any other Text  editor of your choice. You can assign scripts to each class of competition separately through Edit > Competition Properties > Scripts. 
 
@@ -26,17 +26,17 @@ end
 
 and to number the scripts sequentially:
 
-There are many variables available to the scoring script. See [Available variables for Daily Script](#daily_scripts).
+There are many variables available to the scoring script. See "Available variables for daily points script".
 
 **Scripts for total rsults**
 
-You can also write a script for Total results. Procedure is the same way as for daily scripts except that they are located in Edit > Competition Properties > Total Script. See below for [available variables to the Total Script](#total_results_script) 
+You can also write a script for Total results. Procedure is the same way as for daily scripts except that they are located in Edit > Competition Properties > Total Script. See "Available variables for total points script".
 
 **How does it work?**
 
 A TPilots record is provided by SeeYou to the Scoring script. TPilots record and a couple other fields determine all the information required to calculate the scoring for a given contest day. This is the definition of the TPilot record: 
 
-## [Available variables for daily points scripts](#daily_scripts)
+## Available variables for daily points scripts
 
 Pilots[i] = record (values are Double if not indicated otherwise)
 
@@ -115,7 +115,7 @@ TTaskPoint = record; holding basic information about taskpoint and leg
 - d,crs: Double; distance, course to next point
 - td1,td2,td3 Double; variables may be used as temporary variables
 
-## [Available variables for total results script](#total_results_script)
+## Available variables for total results script
 
 Pilots = record
 
@@ -126,4 +126,4 @@ Pilots = record
 
 # Contributing guidelines
 
-You wrote a great script, found a bug and corrected it? Great! Let us incoprorate your changes bIf you want to improve on our existing scripts or add your own, please fork the repo, make your changes in a new branch and create a pull request. Pull requests from forks are described in [pull request from fork](https://help.github.com/en/articles/creating-a-pull-request-from-a-fork) article.
+You wrote a great script, found a bug and corrected it? Great! To incorportate changes to existing scripts or adding your own scripts, please fork the repo, make your changes in a new branch and create a pull request. Pull requests from forks are described in [pull request from fork](https://help.github.com/en/articles/creating-a-pull-request-from-a-fork) article.
