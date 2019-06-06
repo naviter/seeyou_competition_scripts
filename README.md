@@ -6,7 +6,7 @@
 
 SeeYou will calculate the day performance items like Marking Distance, speed, start and finish times etc.  It is the responsibility of the script to determine how many POINTS are awarded for the achieved  performance. 
 
-SeeYou Competition scripts are implemented using the Innerfuse [Pascal Scripts](http://www.carlo-kok.com]. They are very basic Pascal routines with some exceptions. 
+SeeYou Competition scripts are implemented using the Innerfuse [Pascal Scripts](http://www.carlo-kok.com). They are very basic Pascal routines with some exceptions. 
 
 You can write scripts in Notepad or any other Text  editor of your choice. You can assign scripts to each class of competition separately through Edit > Competition Properties > Scripts. 
 
