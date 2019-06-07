@@ -24,8 +24,6 @@ begin
 end.
 ```
 
-and to number the scripts sequentially:
-
 There are many variables available to the scoring script. See "Available variables for daily points script".
 
 **Scripts for total rsults**
