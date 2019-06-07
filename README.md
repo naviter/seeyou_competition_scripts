@@ -21,7 +21,7 @@ begin
 
 	// Your script here
 
-end
+end.
 ```
 
 and to number the scripts sequentially:
