@@ -1,3 +1,4 @@
+![SeeYou Competition Scoring Scripts](https://www.naviter.com/scoring_scripts_github.png)
 # Writing your own scripts
 
 **Scripts for daily results**
