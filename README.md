@@ -1,5 +1,4 @@
-![SeeYou Competition Scoring Scripts](http://www.naviter.com/scoring_scripts_github.png)
-
+![SeeYou Competition Scoring Scripts](https://www.naviter.com/scoring_scripts_github.png)
 # Writing your own scripts
 
 **Scripts for daily results**
@@ -21,10 +20,8 @@ begin
 
 	// Your script here
 
-end
+end.
 ```
-
-and to number the scripts sequentially:
 
 There are many variables available to the scoring script. See "Available variables for daily points script".
 
