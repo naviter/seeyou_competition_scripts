@@ -1,4 +1,13 @@
 ![SeeYou Competition Scoring Scripts](https://www.naviter.com/scoring_scripts_github.png)
+
+### Table of contents
+<!--ts-->
+* [Writing your own scripts](#writing-your-own-scripts)
+	* [Available variables for daily points scripts](#available-variables-for-daily-points-scripts)
+	* [Available variables for total results script](#available-variables-for-total-results-script)
+* [Contributing Guidelines](#contributing-guidelines)
+<!--te-->
+
 # Writing your own scripts
 
 **Scripts for daily results**
