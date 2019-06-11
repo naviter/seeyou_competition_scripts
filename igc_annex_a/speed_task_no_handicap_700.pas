@@ -169,7 +169,7 @@ begin
   end;
 
   // Maximum available points for the Day
-  PmaxDistance := (5*D0/1000)-250;
+  PmaxDistance := (1250*D0/D1)-250;
   PmaxTime := (400*T0/3600.0)-200;
   If T0 <= 0 Then PmaxTime := 1000;
   Pm := MinValue( PmaxDistance, PmaxTime, 1000.0 );
