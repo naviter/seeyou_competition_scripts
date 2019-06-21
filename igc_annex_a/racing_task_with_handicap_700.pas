@@ -1,5 +1,7 @@
 Program Racing_task_with_handicap;
-// Version 7
+// Version 7.01
+//   . D1 is set to a default value. Previously it did not work with unknown class
+// Version 7.00
 //   . Support for new Annex A rules for minimum distance & 1000 points allocation per class
 // Version 6 made by Wojciech for EGC 2019 Turbia
 // Version 5.02, Date 25.04.2018
