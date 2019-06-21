@@ -59,6 +59,7 @@ begin
   if Task.ClassID = 'open' Then Dm := 140000;
   
   // Minimum distance for 1000 points, depending on the class [meters]
+  D1 := 250000;
   if Task.ClassID = 'club' Then D1 := 250000;
   if Task.ClassID = '13_5_meter' Then D1 := 250000;
   if Task.ClassID = 'standard' Then D1 := 300000;
