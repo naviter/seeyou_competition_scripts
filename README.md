@@ -44,91 +44,127 @@ A TPilots record is provided by SeeYou to the Scoring script. TPilots record and
 
 ## Available variables for daily points scripts
 
-Pilots[i] = record (values are Double if not indicated otherwise)
+All variable values are **double** if not indicated otherwise
 
-- sstart start time displayed in results sets in seconds
-- sfinish finish time displayed in results sets in seconds (negative values - no finish) 
-- sdis distance shown in results in meters (negative values will be shown in parenthesis)
-- sspeed speed shown in results in m/s (negative values will be shown in parenthesis)
-- points points shown in results
-- pointString: string; a string representation of points for custom output
-- Hcap handicap factor as declared in pilot setup
-- penalty penalty points defined in Day performance dialog
-- start start time of task (-1 if no start)
-- finish finish time of task (-1 if no finish)
-- dis flown distance
-- speed speed of finished taks (-1 if no finish, takes into account task time)
-- tstart start time of task with time (-1 if no start)
-- tfinish finish time of task with time
-- tdis flown distance in task time
-- tspeed flown distance divided by task time
-- takeoff takeoff time (-1 if no takeoff)
-- landing landing time (-1 if no landing)
-- phototime outlanding time (-1 if no outlanding)
-- isHc set to TRUE if not competing is used
-- FinishAlt altitude of task finish
-- DisToGoal distance between Task landing point and flight landing point
-- Tag string value as defined in Day performace dialog
-- Leg,LegT array of TLeg records (see definition for TLeg below)
-- Warning: String; used to set up a user warning
-- CompID: String; Competition ID of the glider
-- PilotTag: String; string value as defined in Pilot edit dialog
-- user_str1,user_str2,user_str3: String; user strings, use for anything
-- td1,td2,td3: Double; temprary variables, use for anything
-- Markers: array of TMarker (see definition for TMarker below)
-- PotStarts: array of Integer; Array of all valid crossings of the start line. In seconds since midnight
+| Variable                        | Description                                                  | Unit | Remarks                                       |
+| ------------------------------- | :----------------------------------------------------------- | ---- | --------------------------------------------- |
+| sstart                          | start time displayed in results sets                         | s    |                                               |
+| sfinish                         | finish time displayed in results sets                        | s    | negative values - no finish                   |
+| sdis                            | distance shown in results                                    | m    | negative values will be shown in parenthesis  |
+| sspeed                          | speed shown in results                                       | m/s  | negative values will be shown in parenthesis  |
+| points                          | points shown in results                                      |      |                                               |
+| pointString                     | a string representation of points for custom output          |      | string                                        |
+| Hcap                            | handicap factor as declared in pilot setup                   |      |                                               |
+| penalty                         | penalty points defined in "Day performance" dialog           |      |                                               |
+| start                           | start time of task                                           |      | -1 if no start                                |
+| finish                          | finish time of task                                          |      | -1 if no finish                               |
+| dis                             | flown distance                                               |      |                                               |
+| speed                           | speed of finished taks                                       |      | -1 if no finish, takes into account task time |
+| tstart                          | start time of task with time                                 |      | -1 if no start                                |
+| tfinish                         | finish time of task with time                                |      |                                               |
+| tdis                            | flown distance in task time                                  |      |                                               |
+| tspeed                          | flown distance divided by task time                          |      |                                               |
+| takeoff                         | takeoff time                                                 |      | -1 if no takeoff                              |
+| landing                         | landing time                                                 |      | -1 if no landing                              |
+| phototime                       | outlanding time                                              |      | -1 if no outlanding                           |
+| isHc                            | set to TRUE if not competing is used                         |      | bool                                          |
+| FinishAlt                       | altitude of task finish                                      |      |                                               |
+| DisToGoal                       | distance between Task landing point and flight landing point |      |                                               |
+| Tag                             | string value as defined in Day performace dialog             |      | string                                        |
+| Leg, LegT                       | array of TLeg records                                        |      | array                                         |
+| Warning                         | used to set up a user warning                                |      | string                                        |
+| CompID                          | Competition ID of the glider                                 |      | string                                        |
+| PilotTag                        | string value as defined in Pilot edit dialog                 |      | string                                        |
+| user_str1, user_str2, user_str3 | user strings, use for anything                               |      | string                                        |
+| td1, td2, td3                   | temprary variables, use for anything                         |      |                                               |
+| Markers                         | array of TMarker (see definition for TMarker below)          |      | array                                         |
+| PotStarts                       | Array of all valid crossings of the start line. In seconds since midnight | s    | array of integers                             |
 
-TLeg = record; holding leg information
+### TLeg 
 
-- start,finish,d,crs Double; time in seconds, distance in meters, crs in radians
-- td1,td2,td3 Double; variables may be used as temporary variables  
+Type: record
 
-TMarkers = record; this record holds information about all the times when Pilot Event Marker button has been pressed
+Task leg information
 
-- Tsec: Integer; Time of each press of the Pilote Event button
-- Msg: Optional message that is stored with the Pilot Event marker in IGC file
+| Entry  | Description     | Unit | Remarks |
+| ------ | --------------- | ---- | ------- |
+| start  | leg start time  | s    |         |
+| finish | leg finish time | s    |         |
+| d      | leg distance    | m    |         |
+| crs    | leg course      | rad  |         |
 
-Other variables
+### TMarkers
 
-- info1..info2 informational strings shown on results
-- DayTag string value as defined in Day properties dialog
-- ShowMessage( s:string ); use this to debug your scripts 
+Type: record 
 
-Task = record; holding basic information about task
+Records of Pilot Event Marker (PEM) events - created when pilot depressed "Event Marker" button.
 
-- TotalDis: Double; task distance in meters
-- TaskTime: Integer; task time in second  
-- NoStartBeforeTime: Integer; start time in second
-- Point: Array of TTaskPoint; description of task
-- ClassID: string; An enum of existing classes:
-  - world
-  - club
-  - standard
-  - 13_5_meter
-  - 15_meter
-  - 18_meter
-  - double_seater
-  - open
-  - hang_glider_flexible
-  - hang_glider_rigid
-  - paraglider
-  - unknown
-- ClassName: string; Optional nice name for the given class (as entered at Soaring Spot)
+| Entry        | Description                                      | Unit | Remarks |
+| ------------ | ------------------------------------------------ | ---- | ------- |
+| Tsec         | time of the PEM                                  | s    | integer |
+| Msg          | optional message stored with the PEM in IGC file |      | string  |
+| info1, info2 | information shown in the results                 |      | string  |
+| DatTag       | value as defined in "Day properties" dialog      |      | string  |
+| ShowMessage  | string for debugging purposes                    |      | string  |
 
-TTaskPoint = record; holding basic information about taskpoint and leg
+### Task 
 
-- lon,lat: Double; 
-- d,crs: Double; distance, course to next point
-- td1,td2,td3 Double; variables may be used as temporary variables
+Type: record
+
+Basic information about task
+
+| Entry             | Description                     | Unit | Remarks |
+| ----------------- | ------------------------------- | ---- | ------- |
+| TotalDis          | task distance                   | m    |         |
+| TaskTime          | task time                       | s    | integer |
+| NoStartBeforeTime | start time                      | s    | integer |
+| Point             | array of TTaskPoints            |      | array   |
+| ClassID           | enum of existing glider classes |      | string  |
+
+ClassID enum:
+
+- world
+- club
+- standard
+- 13_5_meter
+- 15_meter
+- 18_meter
+- double_seater
+- open
+- hang_glider_flexible
+- hang_glider_rigid
+- paraglider
+- unknown
+
+- ClassName: string; 
+  Optional nice name for the given class - as entered at Soaring Spot.
+
+### TTaskPoint
+
+Type: record
+
+Basic information about taskpoint and leg
+
+| Entry         | Description                           | Unit | Remarks |
+| ------------- | ------------------------------------- | ---- | ------- |
+| lon           | longitude                             |      |         |
+| lat           | lattitude                             |      |         |
+| d             | distance to next point                | m    |         |
+| crs           | course to next point                  | rad  |         |
+| td1, td2, td3 | optional, used as temporary variables |      |         |
 
 ## Available variables for total results script
 
-Pilots = record
+### Pilots
 
-- Total : Double; total points (default value is sum of DayPoints, not 0)
-- TotalString : String; if this is not empty, total points will be shown as the string defined in this value 
-- DayPts : array of Double; Points from each day as calculated in daily scripts
-- DayPtsString : array of String; Same functionality as TotalString
+Type:  record
+
+| Entry        | Description                                         | Unit | Remarks                                  |
+| ------------ | --------------------------------------------------- | ---- | ---------------------------------------- |
+| Total        | total points                                        |      | default value is sum of DayPoints, not 0 |
+| TotalString  | format of the total points when shown as string     |      | string                                   |
+| DayPts       | Points from each day as calculated in daily scripts |      | array of doubles                         |
+| DayPtsString | format of the day points when shown as string       |      | string                                   |
 
 # Contributing guidelines
 
