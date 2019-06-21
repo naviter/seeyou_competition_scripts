@@ -45,6 +45,7 @@ A TPilots record is provided by SeeYou to the Scoring script. TPilots record and
 ## Available variables for daily points scripts
 
 All variable values are **double** if not indicated otherwise
+All times are **seconds since midnight** if not indicated otherwise
 
 | Variable                        | Description                                                  | Unit | Remarks                                       |
 | ------------------------------- | :----------------------------------------------------------- | ---- | --------------------------------------------- |
@@ -56,20 +57,20 @@ All variable values are **double** if not indicated otherwise
 | pointString                     | a string representation of points for custom output          |      | string                                        |
 | Hcap                            | handicap factor as declared in pilot setup                   |      |                                               |
 | penalty                         | penalty points defined in "Day performance" dialog           |      |                                               |
-| start                           | start time of task                                           |      | -1 if no start                                |
-| finish                          | finish time of task                                          |      | -1 if no finish                               |
-| dis                             | flown distance                                               |      |                                               |
-| speed                           | speed of finished taks                                       |      | -1 if no finish, takes into account task time |
-| tstart                          | start time of task with time                                 |      | -1 if no start                                |
-| tfinish                         | finish time of task with time                                |      |                                               |
-| tdis                            | flown distance in task time                                  |      |                                               |
-| tspeed                          | flown distance divided by task time                          |      |                                               |
-| takeoff                         | takeoff time                                                 |      | -1 if no takeoff                              |
-| landing                         | landing time                                                 |      | -1 if no landing                              |
-| phototime                       | outlanding time                                              |      | -1 if no outlanding                           |
+| start                           | start time of task                                           | s    | -1 if no start                                |
+| finish                          | finish time of task                                          | s    | -1 if no finish                               |
+| dis                             | flown distance                                               | m    |                                               |
+| speed                           | speed of finished taks                                       | m/s  | -1 if no finish, takes into account task time |
+| tstart                          | start time of task with time                                 | s    | -1 if no start                                |
+| tfinish                         | finish time of task with time                                | s    |                                               |
+| tdis                            | flown distance in task time                                  | m    |                                               |
+| tspeed                          | flown distance divided by task time                          | m/s  |                                               |
+| takeoff                         | takeoff time                                                 | s    | -1 if no takeoff                              |
+| landing                         | landing time                                                 | s    | -1 if no landing                              |
+| phototime                       | outlanding time                                              | s    | -1 if no outlanding                           |
 | isHc                            | set to TRUE if not competing is used                         |      | bool                                          |
-| FinishAlt                       | altitude of task finish                                      |      |                                               |
-| DisToGoal                       | distance between Task landing point and flight landing point |      |                                               |
+| FinishAlt                       | altitude of task finish                                      | m    |                                               |
+| DisToGoal                       | distance between Task landing point and flight landing point | m    |                                               |
 | Tag                             | string value as defined in Day performace dialog             |      | string                                        |
 | Leg, LegT                       | array of TLeg records                                        |      | array                                         |
 | Warning                         | used to set up a user warning                                |      | string                                        |
