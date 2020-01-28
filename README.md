@@ -81,6 +81,25 @@ All times are **seconds since midnight** if not indicated otherwise
 | Markers                         | array of TMarker (see definition for TMarker below)          |      | array                                         |
 | PotStarts                       | Array of all valid crossings of the start line. In seconds since midnight | s    | array of integers                             |
 
+### TFix
+
+Type: record
+
+Information about each recorded position in the IGC file. This data is only available if the switch in Edit > Contest properties > Options > Expose fixes in scripts is enabled.
+
+| Entry  | Description     | Unit | Remarks |
+| ------ | --------------- | ---- | ------- |
+| Tsec   | time of fix     | s    |         |
+| AltQnh | Altitude above mean sea level | m    |         |
+| AltQne | Altitude above standard pressure level    | m    |         |
+| Gsp    | Ground speed    | m/s  |         |
+| DoT    | Distance on task| m    |         |
+| Cur    | Current current consumption | A | Requires LXNAV FES Bridge data stored in IGC file |
+| Vol    | Current battery voltage      | V | Requires LXNAV FES Bridge data stored in IGC file |
+| Enl    | Current value stored in ENL field | N/A |         |
+| Mop    | Current value stored in MOP field | N/A |         |
+| EngineOn | Wheter SeeYou determined that engine was running or not  | bool |         |
+
 ### TLeg 
 
 Type: record
