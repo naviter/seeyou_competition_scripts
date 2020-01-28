@@ -89,16 +89,16 @@ Information about each recorded position in the IGC file. This data is only avai
 
 | Entry  | Description     | Unit | Remarks |
 | ------ | --------------- | ---- | ------- |
-| Tsec   | time of fix     | s    |         |
-| AltQnh | Altitude above mean sea level | m    |         |
-| AltQne | Altitude above standard pressure level    | m    |         |
-| Gsp    | Ground speed    | m/s  |         |
-| DoT    | Distance on task| m    |         |
-| Cur    | Current current consumption | A | Requires LXNAV FES Bridge data stored in IGC file |
-| Vol    | Current battery voltage      | V | Requires LXNAV FES Bridge data stored in IGC file |
-| Enl    | Current value stored in ENL field | N/A |         |
-| Mop    | Current value stored in MOP field | N/A |         |
-| EngineOn | Wheter SeeYou determined that engine was running or not  | bool |         |
+| Tsec   | time of fix     | s    | integer        |
+| AltQnh | Altitude above mean sea level | m    | double        |
+| AltQne | Altitude above standard pressure level    | m    | double        |
+| Gsp    | Ground speed    | m/s  | double        |
+| DoT    | Distance on task| m    | double        |
+| Cur    | Current current consumption | A | double; Requires LXNAV FES Bridge data stored in IGC file |
+| Vol    | Current battery voltage      | V | double; Requires LXNAV FES Bridge data stored in IGC file |
+| Enl    | Current value stored in ENL field | | double        |
+| Mop    | Current value stored in MOP field | | double        |
+| EngineOn | Wheter SeeYou determined that engine was running or not  |  | boolean        |
 
 ### TLeg 
 
