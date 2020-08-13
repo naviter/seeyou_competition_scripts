@@ -30,6 +30,7 @@ begin
   if GetArrayLength(Pilots) <= 1 then
     exit;
 
+
   Hmin := 100000;  // Lowest Handicap of all competitors in the class
   T0 := 10000000;
   Tm := 0; // slowest finisher time
@@ -70,13 +71,23 @@ begin
 	  end;
     end;
   end;
-  
+
+  // test Legs
+  for i:=0 to GetArrayLength(Pilots)-1 do
+  begin
+    Pilots[i].Warning := '';
+    Pilots[i].Warning := IntToStr(GetArrayLength(Pilots[i].Leg))+': ';
+    for j:=0 to GetArrayLength(Pilots[i].Leg)-1 do
+      Pilots[i].Warning := Pilots[i].Warning + FormatFloat('0',Pilots[i].Leg[j].DisToTp)+'; ';
+  end;
+exit;
+
   // Energy Consumption by pilot on task
   for i:=0 to GetArrayLength(Pilots)-1 do
   begin
     Pilots[i].Warning := '';
     PilotEnergyConsumption := 0;
-	PilotEngineTime := 0;
+  	PilotEngineTime := 0;
 
 	for j := 0 to GetArrayLength(Pilots[i].Fixes)-1 do
 	begin
