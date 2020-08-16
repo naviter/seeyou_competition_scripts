@@ -48,7 +48,7 @@ begin
   	Exit;
   end;
 
-  R_hcap := 1;
+  R_hcap := TaskDis/2/(Nlegs-1)*(1-(Hcap/Hmax))+Hcap/Hmax*Rmin;
 
   Radius := R_hcap;
 end;
@@ -102,7 +102,7 @@ begin
   end;
 
   // test Legs
-  // ! DisToTP feature displays distance to the wrong sector. Should be the previous one.
+  //! DisToTP feature displays distance to the wrong sector. Should be the previous one.
   for i:=0 to GetArrayLength(Pilots)-1 do
   begin
     Pilots[i].Warning := '';
