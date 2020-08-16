@@ -49,6 +49,7 @@ begin
   end;
 
   R_hcap := TaskDis/2/(Nlegs-1)*(1-(Hcap/Hmax))+Hcap/Hmax*Rmin;
+  R_hcap := Round(R_hcap/100)*100;
 
   Radius := R_hcap;
 end;
