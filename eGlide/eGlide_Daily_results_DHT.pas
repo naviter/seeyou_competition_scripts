@@ -15,7 +15,7 @@ var
   Dt, n1, n2, n3, n4, N, D0, Vo, T0, Tm, Hmin,
   Pm, Pdm, Pvm, Pn, F, Fcr, Day: Double;
 
-  D, H, Dh, M, T, Dc, Pd, V, Vh, Pv, S : double;
+  D, H, Dh, M, T, Dc, Pd, V, Vh, Pv, S, R_hcap, PilotDis : double;
   
   PmaxDistance, PmaxTime, PilotEnergyConsumption, CurrentPower, PilotEngineTime, EnginePenalty  : double;
   
@@ -106,13 +106,24 @@ begin
   //! DisToTP feature displays distance to the wrong sector. Should be the previous one.
   for i:=0 to GetArrayLength(Pilots)-1 do
   begin
+    // Print DisToTP to Pilots[i].Warning
     Pilots[i].Warning := '';
     Pilots[i].Warning := IntToStr(GetArrayLength(Pilots[i].Leg))+': ';
     for j:=0 to GetArrayLength(Pilots[i].Leg)-1 do
       Pilots[i].Warning := Pilots[i].Warning + FormatFloat('0',Pilots[i].Leg[j].DisToTp)+'; ';
     
-    //Calculate Turnpoin Radius for this pilot
+    // Print Radius(Hcap) to Pilots[i].Warning
     Pilots[i].Warning := #10 + 'TP Radius: ' + FormatFloat('0',Radius(Pilots[i].hcap))+'m; Nlegs: ' + IntToStr(GetArrayLength(Task.Point)-1)+'; ';
+
+    // Calculate flown distance according to Radius(Pilots[i].hcap)
+    PilotDis := 0;
+    R_hcap := Radius(Pilots[i].hcap);
+    for j:=2 to GetArrayLength(Task.Point) do
+    begin
+//! must check if TP was reached      if Pilots[i].Leg[j].DisToTp <= R_hcap then
+        PilotDis := PilotDis + Task.Point[j-1].d - R_hcap;
+        Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(j-1)+']: ' + FormatFloat('0',Task.Point[j-1].d)+' m; Pilot leg: ' + FormatFloat('0',Task.Point[j-1].d - R_hcap) +'; PilotDis: '+ FormatFloat('0',PilotDis) +' m; ';
+    end;
   end;
 
 
