@@ -112,7 +112,7 @@ begin
       Pilots[i].Warning := Pilots[i].Warning + FormatFloat('0',Pilots[i].Leg[j].DisToTp)+'; ';
     
     //Calculate Turnpoin Radius for this pilot
-    Pilots[i].Warning := #10 + 'TP Radius: ' + FormatFloat('0',Radius(Pilots[i].hcap))+'m; Nlegs: ' + IntToStr(GetArrayLength(Task.Point))+'; ';
+    Pilots[i].Warning := #10 + 'TP Radius: ' + FormatFloat('0',Radius(Pilots[i].hcap))+'m; Nlegs: ' + IntToStr(GetArrayLength(Task.Point)-1)+'; ';
   end;
 
 
