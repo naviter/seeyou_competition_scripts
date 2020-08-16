@@ -31,7 +31,7 @@ var
   R_hcap, Hmax, TaskDis, Nlegs : double;
 begin
   TaskDis := Task.TotalDis;
-  Nlegs := GetArrayLength(Task.Point);
+  Nlegs := GetArrayLength(Task.Point)-1;
 
   Hmax := 0;
   for i := 0 to GetArrayLength(Pilots)-1 do 
