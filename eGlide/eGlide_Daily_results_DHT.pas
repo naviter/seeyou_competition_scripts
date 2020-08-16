@@ -31,7 +31,7 @@ var
   R_hcap, Hmax, TaskDis, Nlegs : double;
 begin
   TaskDis := Task.TotalDis;
-  Nlegs := GetArrayLength(Pilots[0].Leg); //TODO: THIS MUST BE ArrayLength(TASK.TASKPOINT) but I don't know how to use it atm.
+  Nlegs := GetArrayLength(Task.Point);
 
   Hmax := 0;
   for i := 0 to GetArrayLength(Pilots)-1 do 
@@ -112,8 +112,7 @@ begin
       Pilots[i].Warning := Pilots[i].Warning + FormatFloat('0',Pilots[i].Leg[j].DisToTp)+'; ';
     
     //Calculate Turnpoin Radius for this pilot
-    Pilots[i].Warning := #10 + 'TP Radius: ' + FormatFloat('0.0',Radius(Pilots[i].hcap))+'; ';
-    
+    Pilots[i].Warning := #10 + 'TP Radius: ' + FormatFloat('0',Radius(Pilots[i].hcap))+'m; Nlegs: ' + IntToStr(GetArrayLength(Task.Point))+'; ';
   end;
 
 
@@ -129,8 +128,7 @@ begin
 
 
 
-
-// ! END SCRIPT EXECUTION HERE
+//! TEMPORARY END OF SCRIPT EXECUTION
 exit;
 
   // Energy Consumption by pilot on task
