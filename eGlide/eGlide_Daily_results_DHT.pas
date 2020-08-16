@@ -1,6 +1,7 @@
 Program eGlide_Elapsed_time_scoring_with_Distance_Handicapping;
 
 const 
+  Rmin = 500;         // Sector radius in meters that will be used by highest handicapped gliders. It's a parameter, set it to anything you find suitable
   UseHandicaps = 2;   // set to: 0 to disable handicapping, 1 to use handicaps, 2 is auto (handicaps only for club and multi-seat)
   PowerTreshold = 20; // In Watts [W]. If Current*Voltage is less than that, it won't count towards consumed energy.
   RefVoltage = 110;   // Fallback if nothing else is known about voltage used when engine is running
@@ -24,6 +25,33 @@ var
   AAT : boolean;
   Auto_Hcaps_on : boolean;
 
+function Radius( Hcap:double ):double;
+var 
+  i : integer;
+  R_hcap, Hmax, TaskDis, Nlegs : double;
+begin
+  TaskDis := Task.TotalDis;
+  Nlegs := GetArrayLength(Pilots[0].Leg); //TODO: THIS MUST BE ArrayLength(TASK.TASKPOINT) but I don't know how to use it atm.
+
+  Hmax := 0;
+  for i := 0 to GetArrayLength(Pilots)-1 do 
+  begin
+    If not Pilots[i].isHC Then
+    begin
+      If Pilots[i].Hcap > Hmax Then Hmax := Pilots[i].Hcap; // Hightest Handicap of all competitors in the class
+    end;
+  end;
+  If Hmax=0 Then 
+  begin
+    Info1 := '';
+	  Info2 := 'Error: Highest handicap is zero!';
+  	Exit;
+  end;
+
+  R_hcap := 1;
+
+  Radius := R_hcap;
+end;
 
 begin
   // initial checks
@@ -37,17 +65,18 @@ begin
   for i:=0 to GetArrayLength(Pilots)-1 do
   begin
     Pilots[i].start := Task.NoStartBeforeTime;
-	if Pilots[i].finish > 0 Then
-	begin
-	  Pilots[i].speed := Pilots[i].dis / (Pilots[i].finish-Pilots[i].start);
-	end;
+    if Pilots[i].finish > 0 Then
+    begin
+      Pilots[i].speed := Pilots[i].dis / (Pilots[i].finish-Pilots[i].start);
+    end;
     If not Pilots[i].isHC Then
     begin
       If Pilots[i].Hcap < Hmin Then Hmin := Pilots[i].Hcap; // Lowest Handicap of all competitors in the class
-	end;
+    end;
   end;
-  If Hmin=0 Then begin
-          Info1 := '';
+  If Hmin=0 Then 
+  begin
+    Info1 := '';
 	  Info2 := 'Error: Lowest handicap is zero!';
   	Exit;
   end;
@@ -79,7 +108,27 @@ begin
     Pilots[i].Warning := IntToStr(GetArrayLength(Pilots[i].Leg))+': ';
     for j:=0 to GetArrayLength(Pilots[i].Leg)-1 do
       Pilots[i].Warning := Pilots[i].Warning + FormatFloat('0',Pilots[i].Leg[j].DisToTp)+'; ';
+    
+    //Calculate Turnpoin Radius for this pilot
+    Pilots[i].Warning := #10 + 'TP Radius: ' + FormatFloat('0.0',Radius(Pilots[i].hcap))+'; ';
+    
   end;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// END SCRIPT EXECUTION HERE
 exit;
 
   // Energy Consumption by pilot on task
