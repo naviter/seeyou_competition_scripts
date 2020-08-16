@@ -102,6 +102,7 @@ begin
   end;
 
   // test Legs
+  // ! DisToTP feature displays distance to the wrong sector. Should be the previous one.
   for i:=0 to GetArrayLength(Pilots)-1 do
   begin
     Pilots[i].Warning := '';
@@ -128,7 +129,7 @@ begin
 
 
 
-// END SCRIPT EXECUTION HERE
+// ! END SCRIPT EXECUTION HERE
 exit;
 
   // Energy Consumption by pilot on task
