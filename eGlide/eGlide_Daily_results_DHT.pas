@@ -57,7 +57,7 @@ end;
 begin
   // initial checks
   if GetArrayLength(Pilots) <= 1 then
-    exit;
+    exit; 
 
   // Calculate Distance flown for each pilot depending Radius(Hcap)
   //! DisToTP feature displays distance to the wrong sector. Should be the previous one.
