@@ -1,7 +1,7 @@
 Program eGlide_Elapsed_time_scoring_with_Distance_Handicapping;
 
 const 
-  Rmin = 500;         // Sector radius in meters that will be used by highest handicapped gliders. It's a parameter, set it to anything you find suitable
+  Rmin = 500;         // Sector radius in meters that will be used by highest handicapped gliders.
   UseHandicaps = 2;   // set to: 0 to disable handicapping, 1 to use handicaps, 2 is auto (handicaps only for club and multi-seat)
   PowerTreshold = 20; // In Watts [W]. If Current*Voltage is less than that, it won't count towards consumed energy.
   RefVoltage = 110;   // Fallback if nothing else is known about voltage used when engine is running
@@ -59,13 +59,40 @@ begin
   if GetArrayLength(Pilots) <= 1 then
     exit;
 
+  // Calculate Distance flown for each pilot depending Radius(Hcap)
+  //! DisToTP feature displays distance to the wrong sector. Should be the previous one.
+  for i:=0 to GetArrayLength(Pilots)-1 do
+  begin
+    // Print DisToTP to Pilots[i].Warning
+    Pilots[i].Warning := '';
+    for j:=1 to GetArrayLength(Pilots[i].Leg)-1 do
+      Pilots[i].Warning := Pilots[i].Warning + FormatFloat('0',Pilots[i].Leg[j].DisToTp)+'; ';
+    Pilots[i].Warning := Pilots[i].Warning + 'R_hcap: ' + FormatFloat('0',Radius(Pilots[i].hcap))+' m; ';
+    
+    // Print Radius(Hcap) to Pilots[i].Warning
+    Pilots[i].Warning := Pilots[i].Warning + #10 + 'Nlegs: ' + IntToStr(GetArrayLength(Task.Point)-1)+'; ';
+
+    // Set start time for all competitiors to the designated time of the Grand-Prix start gate
+    Pilots[i].start := Task.NoStartBeforeTime;
+
+    // Calculate flown distance according to Radius(Pilots[i].hcap)
+    PilotDis := 0;
+    R_hcap := Radius(Pilots[i].hcap);
+    for j:=2 to GetArrayLength(Task.Point) do
+    begin
+//! must check if TP was reached      if Pilots[i].Leg[j].DisToTp <= R_hcap then
+        PilotDis := PilotDis + Task.Point[j-1].d - R_hcap;
+        Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(j-1)+']: ' + FormatFloat('0',Task.Point[j-1].d)+' m; Pilot leg: ' + FormatFloat('0',Task.Point[j-1].d - R_hcap) +'; PilotDis: '+ FormatFloat('0',PilotDis) +' m; ';
+    end;
+  end;
+  //TODO Pilots[i].dis := PilotDis;
+
 
   Hmin := 100000;  // Lowest Handicap of all competitors in the class
   T0 := 10000000;
   Tm := 0; // slowest finisher time
   for i:=0 to GetArrayLength(Pilots)-1 do
   begin
-    Pilots[i].start := Task.NoStartBeforeTime;
     if Pilots[i].finish > 0 Then
     begin
       Pilots[i].speed := Pilots[i].dis / (Pilots[i].finish-Pilots[i].start);
@@ -85,47 +112,22 @@ begin
   for i:=0 to GetArrayLength(Pilots)-1 do
   begin
     If not Pilots[i].isHC Then
-	begin
+    begin
       // Find the lowest task time
       T := (Pilots[i].finish-Pilots[i].start) * Pilots[i].Hcap/Hmin;
       If (T < T0) and (Pilots[i].finish > 0) Then
       begin
         T0 := T;
-		minIdx := i;
+        minIdx := i;
       end;
 
       // Find the slowest finisher
-	  if T > Tm Then
-	  begin
-	    Tm := T;
-	  end;
+      if T > Tm Then
+      begin
+        Tm := T;
+      end;
     end;
   end;
-
-  // test Legs
-  //! DisToTP feature displays distance to the wrong sector. Should be the previous one.
-  for i:=0 to GetArrayLength(Pilots)-1 do
-  begin
-    // Print DisToTP to Pilots[i].Warning
-    Pilots[i].Warning := '';
-    Pilots[i].Warning := IntToStr(GetArrayLength(Pilots[i].Leg))+': ';
-    for j:=0 to GetArrayLength(Pilots[i].Leg)-1 do
-      Pilots[i].Warning := Pilots[i].Warning + FormatFloat('0',Pilots[i].Leg[j].DisToTp)+'; ';
-    
-    // Print Radius(Hcap) to Pilots[i].Warning
-    Pilots[i].Warning := #10 + 'TP Radius: ' + FormatFloat('0',Radius(Pilots[i].hcap))+'m; Nlegs: ' + IntToStr(GetArrayLength(Task.Point)-1)+'; ';
-
-    // Calculate flown distance according to Radius(Pilots[i].hcap)
-    PilotDis := 0;
-    R_hcap := Radius(Pilots[i].hcap);
-    for j:=2 to GetArrayLength(Task.Point) do
-    begin
-//! must check if TP was reached      if Pilots[i].Leg[j].DisToTp <= R_hcap then
-        PilotDis := PilotDis + Task.Point[j-1].d - R_hcap;
-        Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(j-1)+']: ' + FormatFloat('0',Task.Point[j-1].d)+' m; Pilot leg: ' + FormatFloat('0',Task.Point[j-1].d - R_hcap) +'; PilotDis: '+ FormatFloat('0',PilotDis) +' m; ';
-    end;
-  end;
-
 
 
 
