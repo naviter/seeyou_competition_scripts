@@ -22,7 +22,7 @@ var
   
   i,j, minIdx : integer;
   str : String;
-  Interval, NumIntervals, GateIntervalPos, NumIntervalsPos, PilotStartInterval, PilotStartTime, PilotPEVStartTime, StartTimeBuffer, PilotLegs, TaskLegs : Integer;
+  Interval, NumIntervals, GateIntervalPos, NumIntervalsPos, PilotStartInterval, PilotStartTime, PilotPEVStartTime, StartTimeBuffer, PilotLegs, TaskPoints : Integer;
   AAT : boolean;
   Auto_Hcaps_on : boolean;
 
@@ -61,7 +61,7 @@ begin
     exit; 
 
   // Calculate Distance flown for each pilot depending Radius(Hcap)
-  TaskLegs := GetArrayLength(Task.Point);
+  TaskPoints := GetArrayLength(Task.Point);
 
   for i:=0 to GetArrayLength(Pilots)-1 do
   begin
@@ -74,7 +74,7 @@ begin
 
     //! Debug output
     Pilots[i].Warning := Pilots[i].Warning + 'R_hcap: ' + FormatFloat('0',Radius(Pilots[i].hcap))+' m; ';
-    Pilots[i].Warning := Pilots[i].Warning + #10 + 'Task legs: ' + IntToStr(GetArrayLength(Task.Point)-1)+'; ';
+    Pilots[i].Warning := Pilots[i].Warning + #10 + 'Task legs: ' + IntToStr(TaskPoints)+'; ';
     Pilots[i].Warning := Pilots[i].Warning + #10 + 'Pilot legs: ' + IntToStr(GetArrayLength(Pilots[i].Leg))+'; ';
     for j:=0 to GetArrayLength(Pilots[i].Leg)-1 do
     begin
@@ -92,10 +92,22 @@ begin
       for j:=0 to GetArrayLength(Pilots[i].Leg)-1 do
       begin
         case j of
-          0                                : begin PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap; Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start'; end;
-          GetArrayLength(Pilots[i].Leg)-1  : begin PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap - Rfinish; Pilots[i].Warning := Pilots[i].Warning + #10 + 'Finish'; end;
+          // Subtract one R_hcap at the start leg
+          0 : 
+          begin 
+            PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap; 
+            Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start';
+          end;
+
+          // Subtract one R_hcap at the finish leg
+          (TaskPoints-2)  : 
+          begin 
+            PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap - Rfinish; 
+            Pilots[i].Warning := Pilots[i].Warning + #10 + 'Finish';
+          end;
         else
           begin
+            // Subtract two R_hcap at intermediate legs
             PilotDis := PilotDis + Pilots[i].Leg[j].d - 2*R_hcap;
             Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point';
           end;
