@@ -77,17 +77,19 @@ begin
     PilotDis := 0;
     R_hcap := Radius(Pilots[i].hcap);
 
-    // First leg (R_hcap is deducted once)
-    Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg[0]: LegDis from Start = ' + FormatFloat('0',Task.Point[0].d - R_hcap);
-
+    //TODO Must check if R_hcap was reached, if not, outland the pilot there.
+    //TODO Check if turnpoint was reached
     for j := 1 to GetArrayLength(Pilots[i].Leg)-1 do
     begin
       // Task legs (R_hcap is deducted twice)
       Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(j)+']: DisToTP = ' + FormatFloat('0',Pilots[i].Leg[j].DisToTp)+'; LegDis = ' + FormatFloat('0',Task.Point[j].d - 2*R_hcap);
+      PilotDis := PilotDis + Task.Point[j].d - 2*R_hcap;
     end;
 
     // Last leg (R_hcap is deducted once)
     Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(GetArrayLength(Pilots[i].Leg))+']: LegDis to Finish = ' + FormatFloat('0',Task.Point[GetArrayLength(Pilots[i].Leg)].d - R_hcap);
+    PilotDis := PilotDis + Task.Point[GetArrayLength(Pilots[i].Leg)].d - R_hcap;
+    Pilots[i].Warning := Pilots[i].Warning + #10 + 'PilotDis = ' + FormatFloat('0',PilotDis);
   end;
 
 
