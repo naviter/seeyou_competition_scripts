@@ -61,12 +61,12 @@ begin
     exit; 
 
   // Calculate Distance flown for each pilot depending Radius(Hcap)
-  TaskLegs := GetArrayLength(Task.Point)-1;
+  TaskLegs := GetArrayLength(Task.Point);
 
   for i:=0 to GetArrayLength(Pilots)-1 do
   begin
     PilotDis := 0;
-    PilotLegs := GetArrayLength(Pilots[i].Leg)-1;
+    PilotLegs := GetArrayLength(Pilots[i].Leg);
     Pilots[i].Warning := '';
   
     // Calculate Handicapped turnpoint radius for this particular pilot's Handicap
@@ -78,7 +78,7 @@ begin
     Pilots[i].Warning := Pilots[i].Warning + #10 + 'Pilot legs: ' + IntToStr(GetArrayLength(Pilots[i].Leg))+'; ';
     for j:=0 to GetArrayLength(Pilots[i].Leg)-1 do
     begin
-      Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(j)+']: DisToTP = ' + FormatFloat('0',Pilots[i].Leg[j].DisToTp)+'; LegDis = ' + FormatFloat('0',Task.Point[j].d);
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(j)+']: DisToTP = ' + FormatFloat('0',Pilots[i].Leg[j].DisToTp) + '; PilotLegDis = ' + FormatFloat('0',Pilots[i].Leg[j].d) + '; LegDis = ' + FormatFloat('0',Task.Point[j].d);
     end;
 
     // Set start time for all competitiors to the designated time of the Grand-Prix start gate
@@ -89,13 +89,16 @@ begin
     //TODO Check if turnpoint was reached
     if GetArrayLength(Pilots[i].Leg) > 1 then
     begin
-      for j:=1 to GetArrayLength(Pilots[i].Leg)-1 do // Starts with 1 because Leg[0] is from Takeoff to Start, not relevant for competition result
+      for j:=0 to GetArrayLength(Pilots[i].Leg)-1 do
       begin
         case j of
-          1           : begin PilotDis := PilotDis + Task.Point[0].d - R_hcap; Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start'; end;
-          TaskLegs-1  : begin PilotDis := PilotDis + Task.Point[0].d - R_hcap; Pilots[i].Warning := Pilots[i].Warning + #10 + 'Finish'; end;
+          0                                : begin PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap; Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start'; end;
+          GetArrayLength(Pilots[i].Leg)-1  : begin PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap - Rfinish; Pilots[i].Warning := Pilots[i].Warning + #10 + 'Finish'; end;
         else
-          Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point';
+          begin
+            PilotDis := PilotDis + Pilots[i].Leg[j].d - 2*R_hcap;
+            Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point';
+          end;
         end;
       end;
     end
