@@ -22,17 +22,17 @@ var
   
   i,j, minIdx : integer;
   str : String;
-  Interval, NumIntervals, GateIntervalPos, NumIntervalsPos, PilotStartInterval, PilotStartTime, PilotPEVStartTime, StartTimeBuffer : Integer;
+  Interval, NumIntervals, GateIntervalPos, NumIntervalsPos, PilotStartInterval, PilotStartTime, PilotPEVStartTime, StartTimeBuffer, PilotLegs, TaskLegs : Integer;
   AAT : boolean;
   Auto_Hcaps_on : boolean;
 
 function Radius( Hcap:double ):double;
 var 
   i : integer;
-  R_hcap, Hmax, TaskDis, Nlegs : double;
+  R_hcap, Hmax, TaskDis, TaskLegs : double;
 begin
   TaskDis := Task.TotalDis;
-  Nlegs := GetArrayLength(Task.Point)-1;
+  TaskLegs := GetArrayLength(Task.Point)-1;
 
   Hmax := 0;
   for i := 0 to GetArrayLength(Pilots)-1 do 
@@ -49,7 +49,7 @@ begin
   	Exit;
   end;
 
-  R_hcap := TaskDis/2/(Nlegs-1)*(1-(Hcap/Hmax))+Hcap/Hmax*Rmin;
+  R_hcap := TaskDis/2/(TaskLegs-1)*(1-(Hcap/Hmax))+Hcap/Hmax*Rmin;
   R_hcap := Round(R_hcap/100)*100;
 
   Radius := R_hcap;
@@ -61,39 +61,72 @@ begin
     exit; 
 
   // Calculate Distance flown for each pilot depending Radius(Hcap)
+  TaskLegs := GetArrayLength(Task.Point)-1;
+
   for i:=0 to GetArrayLength(Pilots)-1 do
   begin
-    // Print DisToTP to Pilots[i].Warning
+    PilotDis := 0;
+    PilotLegs := GetArrayLength(Pilots[i].Leg)-1;
     Pilots[i].Warning := '';
-    for j:=1 to GetArrayLength(Pilots[i].Leg)-1 do
+  
+    // Calculate Handicapped turnpoint radius for this particular pilot's Handicap
+    R_hcap := Radius(Pilots[i].hcap);
+
+    //! Debug output
     Pilots[i].Warning := Pilots[i].Warning + 'R_hcap: ' + FormatFloat('0',Radius(Pilots[i].hcap))+' m; ';
-    
-    // Print Radius(Hcap) to Pilots[i].Warning
-    Pilots[i].Warning := Pilots[i].Warning + #10 + 'Nlegs: ' + IntToStr(GetArrayLength(Task.Point)-1)+'; ';
+    Pilots[i].Warning := Pilots[i].Warning + #10 + 'Task legs: ' + IntToStr(GetArrayLength(Task.Point)-1)+'; ';
+    Pilots[i].Warning := Pilots[i].Warning + #10 + 'Pilot legs: ' + IntToStr(GetArrayLength(Pilots[i].Leg))+'; ';
+    for j:=0 to GetArrayLength(Pilots[i].Leg)-1 do
+    begin
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(j)+']: DisToTP = ' + FormatFloat('0',Pilots[i].Leg[j].DisToTp)+'; LegDis = ' + FormatFloat('0',Task.Point[j].d);
+    end;
 
     // Set start time for all competitiors to the designated time of the Grand-Prix start gate
     Pilots[i].start := Task.NoStartBeforeTime;
 
     // Calculate flown distance according to Radius(Pilots[i].hcap)
-    PilotDis := 0;
-    R_hcap := Radius(Pilots[i].hcap);
-
     //TODO Must check if R_hcap was reached before adding PilotDis. If not, outland the pilot at that turnpoint.
     //TODO Check if turnpoint was reached
-    // First leg (R_hcap is deducted once)
-    Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg[1]: LegDis from Start = ' + FormatFloat('0',Task.Point[1].d - R_hcap);
-    PilotDis := PilotDis + Task.Point[0].d - R_hcap;
-
-    for j := 2 to GetArrayLength(Pilots[i].Leg)-1 do
+    if GetArrayLength(Pilots[i].Leg) > 1 then
     begin
-      // Task legs (R_hcap is deducted twice)
-      Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(j)+']: DisToTP = ' + FormatFloat('0',Pilots[i].Leg[j].DisToTp)+'; LegDis = ' + FormatFloat('0',Task.Point[j].d - 2*R_hcap);
-      PilotDis := PilotDis + Task.Point[j].d - 2*R_hcap;
+      for j:=1 to GetArrayLength(Pilots[i].Leg)-1 do // Starts with 1 because Leg[0] is from Takeoff to Start, not relevant for competition result
+      begin
+        case j of
+          1           : begin PilotDis := PilotDis + Task.Point[0].d - R_hcap; Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start'; end;
+          TaskLegs-1  : begin PilotDis := PilotDis + Task.Point[0].d - R_hcap; Pilots[i].Warning := Pilots[i].Warning + #10 + 'Finish'; end;
+        else
+          Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point';
+        end;
+      end;
+    end
+    else
+    begin
+      // Less than 1 leg in Pilots[i].Leg
     end;
 
-    // Last leg (R_hcap is deducted once)
-    Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(GetArrayLength(Pilots[i].Leg))+']: LegDis to Finish = ' + FormatFloat('0',Task.Point[GetArrayLength(Pilots[i].Leg)].d - R_hcap - Rfinish);
-    PilotDis := PilotDis + Task.Point[GetArrayLength(Pilots[i].Leg)].d - R_hcap - Rfinish;
+    // First leg (R_hcap is deducted once)
+    // if Pilots[i].Leg[1].DisToTp < R_hcap then
+    // begin
+    //   Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg[1]: DisToTP = ' + FormatFloat('0',Pilots[i].Leg[1].DisToTp)+'; LegDis from Start = ' + FormatFloat('0',Task.Point[1].d - R_hcap);
+    //   PilotDis := PilotDis + Task.Point[0].d - R_hcap;
+    // end
+    // else
+    // begin
+    //   Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg[1]: DisToTP = ' + FormatFloat('0',Pilots[i].Leg[1].DisToTp)+'; LegDis from Start to Outlanding = ' + FormatFloat('0',Task.Point[1].d - R_hcap);
+    //   PilotDis := PilotDis + Pilots[i].Leg[1].d;
+    // end;
+
+
+    // for j := 2 to GetArrayLength(Pilots[i].Leg)-1 do
+    // begin
+    //   // Task legs (R_hcap is deducted twice)
+    //   Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(j)+']: DisToTP = ' + FormatFloat('0',Pilots[i].Leg[j].DisToTp)+'; LegDis = ' + FormatFloat('0',Task.Point[j].d - 2*R_hcap);
+    //   PilotDis := PilotDis + Task.Point[j].d - 2*R_hcap;
+    // end;
+
+    // // Last leg (R_hcap is deducted once)
+    // Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(GetArrayLength(Pilots[i].Leg))+']: LegDis to Finish = ' + FormatFloat('0',Task.Point[GetArrayLength(Pilots[i].Leg)].d - R_hcap - Rfinish);
+    // PilotDis := PilotDis + Task.Point[GetArrayLength(Pilots[i].Leg)].d - R_hcap - Rfinish;
     Pilots[i].Warning := Pilots[i].Warning + #10 + 'PilotDis = ' + FormatFloat('0',PilotDis);
   end;
 
