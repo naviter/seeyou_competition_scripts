@@ -23,7 +23,7 @@ var
   i,j, minIdx : integer;
   str : String;
   Interval, NumIntervals, GateIntervalPos, NumIntervalsPos, PilotStartInterval, PilotStartTime, PilotPEVStartTime, StartTimeBuffer, PilotLegs, TaskPoints : Integer;
-  AAT : boolean;
+  AAT, TPRounded : boolean;
   Auto_Hcaps_on : boolean;
 
 function Radius( Hcap:double ):double;
@@ -85,36 +85,57 @@ begin
     Pilots[i].start := Task.NoStartBeforeTime;
 
     // Calculate flown distance according to Radius(Pilots[i].hcap)
-    //TODO Must check if R_hcap was reached before adding PilotDis. If not, outland the pilot at that turnpoint.
+    TPRounded := true;
     if GetArrayLength(Pilots[i].Leg) > 0 then
     begin
       for j:=0 to GetArrayLength(Pilots[i].Leg)-1 do
       begin
-        case j of
-          // Start leg
-          0 : 
-          begin 
-            if (PilotLegs >= j+1) then
-              PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap
-            else
-              PilotDis := PilotDis + Pilots[i].Leg[j].d;
-            Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start';
-          end;
+        while TPRounded do
+        begin
+          case j of
+            // Start leg
+            0 : 
+            begin 
+              if (PilotLegs >= j+1) then
+              begin
+                if Pilots[i].Leg[j].DisToTP <= R_hcap then
+                  PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap
+                else
+                begin
+                  PilotDis := PilotDis + Pilots[i].Leg[j].d - Pilots[i].Leg[j].DisToTP;
+                  TPRounded := false;
+                end;
+              end
+              else
+              begin
+                PilotDis := PilotDis + Pilots[i].Leg[j].d;
+                TPRounded := false;
+              end;
+              Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start';
+            end;
 
-          // Finish leg
-          (TaskPoints-2)  : 
-          begin 
-            PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap - Rfinish; 
-            Pilots[i].Warning := Pilots[i].Warning + #10 + 'Finish';
-          end;
-        else
-          begin
-            // Intermediate legs
-            if (PilotLegs >= j+1) then
-              PilotDis := PilotDis + Pilots[i].Leg[j].d - 2*R_hcap
-            else
-              PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap;
-            Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point';
+            // Finish leg
+            (TaskPoints-2)  : 
+            begin 
+              //TODO Do we need to handle landout on final leg? Guess so.
+              PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap - Rfinish; 
+              Pilots[i].Warning := Pilots[i].Warning + #10 + 'Finish';
+            end;
+          else
+            begin
+              // Intermediate legs
+              //TODO Must check if R_hcap was reached before adding PilotDis. If not, outland the pilot at that turnpoint.
+              if (PilotLegs >= j+1) then
+              begin
+                PilotDis := PilotDis + Pilots[i].Leg[j].d - 2*R_hcap;
+              end
+              else
+              begin
+                PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap;
+                TPRounded := false;
+              end;
+              Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point';
+            end;
           end;
         end;
       end;
@@ -122,31 +143,10 @@ begin
     else
     begin
       // Less than 1 leg in Pilots[i].Leg
+      //TODO Do we need to handle this case?
     end;
 
-    // First leg (R_hcap is deducted once)
-    // if Pilots[i].Leg[1].DisToTp < R_hcap then
-    // begin
-    //   Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg[1]: DisToTP = ' + FormatFloat('0',Pilots[i].Leg[1].DisToTp)+'; LegDis from Start = ' + FormatFloat('0',Task.Point[1].d - R_hcap);
-    //   PilotDis := PilotDis + Task.Point[0].d - R_hcap;
-    // end
-    // else
-    // begin
-    //   Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg[1]: DisToTP = ' + FormatFloat('0',Pilots[i].Leg[1].DisToTp)+'; LegDis from Start to Outlanding = ' + FormatFloat('0',Task.Point[1].d - R_hcap);
-    //   PilotDis := PilotDis + Pilots[i].Leg[1].d;
-    // end;
-
-
-    // for j := 2 to GetArrayLength(Pilots[i].Leg)-1 do
-    // begin
-    //   // Task legs (R_hcap is deducted twice)
-    //   Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(j)+']: DisToTP = ' + FormatFloat('0',Pilots[i].Leg[j].DisToTp)+'; LegDis = ' + FormatFloat('0',Task.Point[j].d - 2*R_hcap);
-    //   PilotDis := PilotDis + Task.Point[j].d - 2*R_hcap;
-    // end;
-
-    // // Last leg (R_hcap is deducted once)
-    // Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(GetArrayLength(Pilots[i].Leg))+']: LegDis to Finish = ' + FormatFloat('0',Task.Point[GetArrayLength(Pilots[i].Leg)].d - R_hcap - Rfinish);
-    // PilotDis := PilotDis + Task.Point[GetArrayLength(Pilots[i].Leg)].d - R_hcap - Rfinish;
+    //! Debug output
     Pilots[i].Warning := Pilots[i].Warning + #10 + 'PilotDis = ' + FormatFloat('0',PilotDis);
   end;
 
