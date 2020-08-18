@@ -2,6 +2,7 @@ Program eGlide_Elapsed_time_scoring_with_Distance_Handicapping;
 
 const 
   Rmin = 500;         // Sector radius in meters that will be used by highest handicapped gliders.
+  Rfinish = 0;        // Finish ring radius. Use zero if finish line is used.
   UseHandicaps = 2;   // set to: 0 to disable handicapping, 1 to use handicaps, 2 is auto (handicaps only for club and multi-seat)
   PowerTreshold = 20; // In Watts [W]. If Current*Voltage is less than that, it won't count towards consumed energy.
   RefVoltage = 110;   // Fallback if nothing else is known about voltage used when engine is running
@@ -77,7 +78,7 @@ begin
     PilotDis := 0;
     R_hcap := Radius(Pilots[i].hcap);
 
-    //TODO Must check if R_hcap was reached, if not, outland the pilot there.
+    //TODO Must check if R_hcap was reached before adding PilotDis. If not, outland the pilot at that turnpoint.
     //TODO Check if turnpoint was reached
     // First leg (R_hcap is deducted once)
     Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg[1]: LegDis from Start = ' + FormatFloat('0',Task.Point[1].d - R_hcap);
@@ -91,8 +92,8 @@ begin
     end;
 
     // Last leg (R_hcap is deducted once)
-    Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(GetArrayLength(Pilots[i].Leg))+']: LegDis to Finish = ' + FormatFloat('0',Task.Point[GetArrayLength(Pilots[i].Leg)].d - R_hcap);
-    PilotDis := PilotDis + Task.Point[GetArrayLength(Pilots[i].Leg)].d - R_hcap;
+    Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(GetArrayLength(Pilots[i].Leg))+']: LegDis to Finish = ' + FormatFloat('0',Task.Point[GetArrayLength(Pilots[i].Leg)].d - R_hcap - Rfinish);
+    PilotDis := PilotDis + Task.Point[GetArrayLength(Pilots[i].Leg)].d - R_hcap - Rfinish;
     Pilots[i].Warning := Pilots[i].Warning + #10 + 'PilotDis = ' + FormatFloat('0',PilotDis);
   end;
 
