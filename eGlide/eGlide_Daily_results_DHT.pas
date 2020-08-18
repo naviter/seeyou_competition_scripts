@@ -60,13 +60,11 @@ begin
     exit; 
 
   // Calculate Distance flown for each pilot depending Radius(Hcap)
-  //! DisToTP feature displays distance to the wrong sector. Should be the previous one.
   for i:=0 to GetArrayLength(Pilots)-1 do
   begin
     // Print DisToTP to Pilots[i].Warning
     Pilots[i].Warning := '';
     for j:=1 to GetArrayLength(Pilots[i].Leg)-1 do
-      Pilots[i].Warning := Pilots[i].Warning + FormatFloat('0',Pilots[i].Leg[j].DisToTp)+'; ';
     Pilots[i].Warning := Pilots[i].Warning + 'R_hcap: ' + FormatFloat('0',Radius(Pilots[i].hcap))+' m; ';
     
     // Print Radius(Hcap) to Pilots[i].Warning
@@ -78,14 +76,19 @@ begin
     // Calculate flown distance according to Radius(Pilots[i].hcap)
     PilotDis := 0;
     R_hcap := Radius(Pilots[i].hcap);
-    for j:=2 to GetArrayLength(Task.Point) do
+
+    // First leg (R_hcap is deducted once)
+    Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg[0]: LegDis from Start = ' + FormatFloat('0',Task.Point[0].d - R_hcap);
+
+    for j := 1 to GetArrayLength(Pilots[i].Leg)-1 do
     begin
-//! must check if TP was reached      if Pilots[i].Leg[j].DisToTp <= R_hcap then
-        PilotDis := PilotDis + Task.Point[j-1].d - R_hcap;
-        Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(j-1)+']: ' + FormatFloat('0',Task.Point[j-1].d)+' m; Pilot leg: ' + FormatFloat('0',Task.Point[j-1].d - R_hcap) +'; PilotDis: '+ FormatFloat('0',PilotDis) +' m; ';
+      // Task legs (R_hcap is deducted twice)
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(j)+']: DisToTP = ' + FormatFloat('0',Pilots[i].Leg[j].DisToTp)+'; LegDis = ' + FormatFloat('0',Task.Point[j].d - 2*R_hcap);
     end;
+
+    // Last leg (R_hcap is deducted once)
+    Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(GetArrayLength(Pilots[i].Leg))+']: LegDis to Finish = ' + FormatFloat('0',Task.Point[GetArrayLength(Pilots[i].Leg)].d - R_hcap);
   end;
-  //TODO Pilots[i].dis := PilotDis;
 
 
   Hmin := 100000;  // Lowest Handicap of all competitors in the class
