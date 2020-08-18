@@ -74,7 +74,7 @@ begin
 
     //! Debug output
     Pilots[i].Warning := Pilots[i].Warning + 'R_hcap: ' + FormatFloat('0',Radius(Pilots[i].hcap))+' m; ';
-    Pilots[i].Warning := Pilots[i].Warning + #10 + 'Task legs: ' + IntToStr(TaskPoints)+'; ';
+    Pilots[i].Warning := Pilots[i].Warning + #10 + 'Task points: ' + IntToStr(TaskPoints)+'; ';
     Pilots[i].Warning := Pilots[i].Warning + #10 + 'Pilot legs: ' + IntToStr(GetArrayLength(Pilots[i].Leg))+'; ';
     for j:=0 to GetArrayLength(Pilots[i].Leg)-1 do
     begin
@@ -86,20 +86,22 @@ begin
 
     // Calculate flown distance according to Radius(Pilots[i].hcap)
     //TODO Must check if R_hcap was reached before adding PilotDis. If not, outland the pilot at that turnpoint.
-    //TODO Check if turnpoint was reached
-    if GetArrayLength(Pilots[i].Leg) > 1 then
+    if GetArrayLength(Pilots[i].Leg) > 0 then
     begin
       for j:=0 to GetArrayLength(Pilots[i].Leg)-1 do
       begin
         case j of
-          // Subtract one R_hcap at the start leg
+          // Start leg
           0 : 
           begin 
-            PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap; 
+            if (PilotLegs >= j+1) then
+              PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap
+            else
+              PilotDis := PilotDis + Pilots[i].Leg[j].d;
             Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start';
           end;
 
-          // Subtract one R_hcap at the finish leg
+          // Finish leg
           (TaskPoints-2)  : 
           begin 
             PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap - Rfinish; 
@@ -107,8 +109,11 @@ begin
           end;
         else
           begin
-            // Subtract two R_hcap at intermediate legs
-            PilotDis := PilotDis + Pilots[i].Leg[j].d - 2*R_hcap;
+            // Intermediate legs
+            if (PilotLegs >= j+1) then
+              PilotDis := PilotDis + Pilots[i].Leg[j].d - 2*R_hcap
+            else
+              PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap;
             Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point';
           end;
         end;
