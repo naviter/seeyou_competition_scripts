@@ -96,9 +96,10 @@ begin
             // Start leg
             0 : 
             begin 
+              // If it was successfully completed, subtract R_hcap. If not, just count what was flown and set TPRounded to false.
               if (PilotLegs >= j+1) then
               begin
-                if Pilots[i].Leg[j].DisToTP <= R_hcap then
+                if Pilots[i].Leg[j+1].DisToTP <= R_hcap then
                   PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap
                 else
                 begin
@@ -118,6 +119,7 @@ begin
             // Finish leg
             (TaskPoints-2)  : 
             begin 
+              // If it was successfully completed, subtract R_hcap. If not, just count what was flown and set TPRounded to false.
               if Pilots[i].finish > 0 then
               begin
                 PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap - Rfinish; 
@@ -132,6 +134,7 @@ begin
           else
             begin
               // Intermediate legs
+              // If it was successfully completed, subtract R_hcap. If not, just count what was flown and set TPRounded to false.
               //TODO Must check if R_hcap was reached before adding PilotDis. If not, outland the pilot at that turnpoint.
               if (PilotLegs >= j+1) then
               begin
