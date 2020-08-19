@@ -1,7 +1,7 @@
 Program eGlide_Elapsed_time_scoring_with_Distance_Handicapping;
 
 const 
-  Rmin = 200;         // Sector radius in meters that will be used by highest handicapped gliders.
+  Rmin = 500;         // Sector radius in meters that will be used by highest handicapped gliders.
   Rfinish = 0;        // Finish ring radius. Use zero if finish line is used.
   UseHandicaps = 2;   // set to: 0 to disable handicapping, 1 to use handicaps, 2 is auto (handicaps only for club and multi-seat)
   PowerTreshold = 20; // In Watts [W]. If Current*Voltage is less than that, it won't count towards consumed energy.
