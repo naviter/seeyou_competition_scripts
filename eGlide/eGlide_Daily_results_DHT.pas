@@ -179,10 +179,18 @@ begin
     Pilots[i].Warning := Pilots[i].Warning + #10 + 'PilotDis = ' + FormatFloat('0',PilotDis);
 
     // Set values for output
-    Pilots[i].start := Task.NoStartBeforeTime;
-    Pilots[i].dis := PilotDis;
+    Pilots[i].sstart := Task.NoStartBeforeTime;
+    Pilots[i].sdis := PilotDis;
     if not TPRounded Then
-      Pilots[i].finish := -1;
+    begin
+      Pilots[i].sfinish := -1;
+      Pilots[i].sspeed := 0;
+    end
+    else
+    begin
+      Pilots[i].sfinish := Pilots[i].finish;
+      Pilots[i].sspeed := PilotDis / (Pilots[i].finish - Pilots[i].start);
+    end;
   end;
 
 
