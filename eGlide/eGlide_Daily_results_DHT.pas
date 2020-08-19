@@ -107,10 +107,10 @@ begin
                 end
                 else
                 begin
-                  PilotDis := PilotDis + Pilots[i].Leg[j].d - Pilots[i].Leg[j].DisToTP;
+                  PilotDis := PilotDis + Pilots[i].Leg[j].d - Pilots[i].Leg[j+1].DisToTP;
                   TPRounded := false;
                   //! Debug output
-                  Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start leg in sector but < R_hcap';
+                  Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start leg in sector but > R_hcap';
                 end;
               end
               else
@@ -142,12 +142,21 @@ begin
             begin
               // Intermediate legs
               // If it was successfully completed, subtract R_hcap. If not, just count what was flown and set TPRounded to false.
-              //TODO Must check if R_hcap was reached before adding PilotDis. If not, outland the pilot at that turnpoint.
-              if (PilotLegs >= j+1) then
+              if (PilotLegs > j+1) then
               begin
-                PilotDis := PilotDis + Pilots[i].Leg[j].d - 2*R_hcap;
-                //! Debug output
-                Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point OK';
+                if Pilots[i].Leg[j+1].DisToTP <= R_hcap then
+                begin
+                  PilotDis := PilotDis + Pilots[i].Leg[j].d - 2*R_hcap;
+                  //! Debug output
+                  Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point OK';
+                end
+                else
+                begin
+                  PilotDis := PilotDis + Pilots[i].Leg[j].d - Pilots[i].Leg[j+1].DisToTP;
+                  TPRounded := false;
+                  //! Debug output
+                  Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point in sector but > R_hcap';
+                end;
               end
               else
               begin
