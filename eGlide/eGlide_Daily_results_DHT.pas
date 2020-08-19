@@ -81,8 +81,6 @@ begin
       Pilots[i].Warning := Pilots[i].Warning + #10 + 'Leg['+IntToStr(j)+']: DisToTP = ' + FormatFloat('0',Pilots[i].Leg[j].DisToTp) + '; PilotLegDis = ' + FormatFloat('0',Pilots[i].Leg[j].d) + '; LegDis = ' + FormatFloat('0',Task.Point[j].d);
     end;
 
-    // Set start time for all competitiors to the designated time of the Grand-Prix start gate
-    Pilots[i].start := Task.NoStartBeforeTime;
 
     // Calculate flown distance according to Radius(Pilots[i].hcap)
     TPRounded := true;
@@ -107,8 +105,8 @@ begin
                 end
                 else
                 begin
-                  PilotDis := PilotDis + Pilots[i].Leg[j].d - Pilots[i].Leg[j+1].DisToTP;
                   TPRounded := false;
+                  PilotDis := PilotDis + Pilots[i].Leg[j].d - Pilots[i].Leg[j+1].DisToTP;
                   //! Debug output
                   Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start leg in sector but > R_hcap';
                 end;
@@ -174,11 +172,29 @@ begin
     begin
       // Less than 1 leg in Pilots[i].Leg
       //TODO Do we need to handle this case?
+      PilotDis := 0;
     end;
 
     //! Debug output
     Pilots[i].Warning := Pilots[i].Warning + #10 + 'PilotDis = ' + FormatFloat('0',PilotDis);
+
+    // Set values for output
+    Pilots[i].start := Task.NoStartBeforeTime;
+    Pilots[i].dis := PilotDis;
+    if not TPRounded Then
+      Pilots[i].finish := -1;
   end;
+
+
+
+
+
+//! TEMPORARY END OF SCRIPT EXECUTION
+exit;
+
+
+
+
 
 
   Hmin := 100000;  // Lowest Handicap of all competitors in the class
@@ -230,12 +246,6 @@ begin
 
 
 
-
-
-
-
-//! TEMPORARY END OF SCRIPT EXECUTION
-exit;
 
   // Energy Consumption by pilot on task
   for i:=0 to GetArrayLength(Pilots)-1 do
