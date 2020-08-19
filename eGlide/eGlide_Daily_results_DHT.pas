@@ -90,7 +90,7 @@ begin
     begin
       for j:=0 to GetArrayLength(Pilots[i].Leg)-1 do
       begin
-        while TPRounded do
+        if TPRounded then
         begin
           case j of
             // Start leg
@@ -111,14 +111,22 @@ begin
                 PilotDis := PilotDis + Pilots[i].Leg[j].d;
                 TPRounded := false;
               end;
+              //! Debug output
               Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start';
             end;
 
             // Finish leg
             (TaskPoints-2)  : 
             begin 
-              //TODO Do we need to handle landout on final leg? Guess so.
-              PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap - Rfinish; 
+              if Pilots[i].finish > 0 then
+              begin
+                PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap - Rfinish; 
+              end
+              else
+              begin
+                PilotDis := PilotDis + Pilots[i].Leg[j].d; 
+              end;
+              //! Debug output
               Pilots[i].Warning := Pilots[i].Warning + #10 + 'Finish';
             end;
           else
@@ -134,6 +142,7 @@ begin
                 PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap;
                 TPRounded := false;
               end;
+              //! Debug output
               Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point';
             end;
           end;
