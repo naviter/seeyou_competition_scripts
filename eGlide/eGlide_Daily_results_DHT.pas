@@ -1,7 +1,7 @@
 Program eGlide_Elapsed_time_scoring_with_Distance_Handicapping;
 
 const 
-  Rmin = 500;         // Sector radius in meters that will be used by highest handicapped gliders.
+  Rmin = 200;         // Sector radius in meters that will be used by highest handicapped gliders.
   Rfinish = 0;        // Finish ring radius. Use zero if finish line is used.
   UseHandicaps = 2;   // set to: 0 to disable handicapping, 1 to use handicaps, 2 is auto (handicaps only for club and multi-seat)
   PowerTreshold = 20; // In Watts [W]. If Current*Voltage is less than that, it won't count towards consumed energy.
@@ -97,23 +97,29 @@ begin
             0 : 
             begin 
               // If it was successfully completed, subtract R_hcap. If not, just count what was flown and set TPRounded to false.
-              if (PilotLegs >= j+1) then
+              if (PilotLegs > j+1) then
               begin
                 if Pilots[i].Leg[j+1].DisToTP <= R_hcap then
-                  PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap
+                begin
+                  PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap;
+                  //! Debug output
+                  Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start OK';
+                end
                 else
                 begin
                   PilotDis := PilotDis + Pilots[i].Leg[j].d - Pilots[i].Leg[j].DisToTP;
                   TPRounded := false;
+                  //! Debug output
+                  Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start leg in sector but < R_hcap';
                 end;
               end
               else
               begin
                 PilotDis := PilotDis + Pilots[i].Leg[j].d;
                 TPRounded := false;
+                //! Debug output
+                Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start leg did not reach 1st sector';
               end;
-              //! Debug output
-              Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start';
             end;
 
             // Finish leg
@@ -123,13 +129,14 @@ begin
               if Pilots[i].finish > 0 then
               begin
                 PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap - Rfinish; 
+                //! Debug output
+                Pilots[i].Warning := Pilots[i].Warning + #10 + 'Finish OK';
               end
               else
               begin
                 PilotDis := PilotDis + Pilots[i].Leg[j].d; 
+                Pilots[i].Warning := Pilots[i].Warning + #10 + 'Finish leg not completed';
               end;
-              //! Debug output
-              Pilots[i].Warning := Pilots[i].Warning + #10 + 'Finish';
             end;
           else
             begin
@@ -139,14 +146,16 @@ begin
               if (PilotLegs >= j+1) then
               begin
                 PilotDis := PilotDis + Pilots[i].Leg[j].d - 2*R_hcap;
+                //! Debug output
+                Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point OK';
               end
               else
               begin
                 PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap;
                 TPRounded := false;
+                //! Debug output
+                Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point sector not reached';
               end;
-              //! Debug output
-              Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point';
             end;
           end;
         end;
