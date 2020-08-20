@@ -189,7 +189,8 @@ begin
     else
     begin
       Pilots[i].sfinish := Pilots[i].finish;
-      Pilots[i].sspeed := PilotDis / (Pilots[i].finish - Pilots[i].start);
+      if Pilots[i].finish > 0 then
+        Pilots[i].sspeed := PilotDis / (Pilots[i].finish - Pilots[i].start);
     end;
   end;
 
