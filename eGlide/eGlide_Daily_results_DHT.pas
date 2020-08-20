@@ -223,68 +223,66 @@ begin
     PilotEnergyConsumption := 0;
   	PilotEngineTime := 0;
 
-	for j := 0 to GetArrayLength(Pilots[i].Fixes)-1 do
-	begin
-	  if (Pilots[i].Fixes[j].Tsec > Pilots[i].start) and (Pilots[i].Fixes[j].Tsec < Pilots[i].finish) Then
-	  begin
-	    // If pilot has Cur and Vol
-		if Pilots[i].HasCur then
-		begin
-			if not Pilots[i].HasVol Then
-				Pilots[i].Fixes[j].Vol := RefVoltage;
-			if (Pilots[i].Fixes[j].Cur > 0) and (Pilots[i].Fixes[j].Vol > 0) then
-			begin
-				CurrentPower := Pilots[i].Fixes[j].Cur * Pilots[i].Fixes[j].Vol;
-				If CurrentPower > PowerTreshold then
-				begin
-					PilotEngineTime := PilotEngineTime + Pilots[i].Fixes[j+1].Tsec - Pilots[i].Fixes[j].Tsec;
-	//				Pilots[i].Warning := Pilots[i].Warning + IntToStr(Round(Pilots[i].Fixes[j].Cur))+ ' * ' + IntToStr(Round(Pilots[i].Fixes[j].Vol)) + ' * ' + IntToStr(Pilots[i].Fixes[j+1].Tsec - Pilots[i].Fixes[j].Tsec) + #10;
-					PilotEnergyConsumption := PilotEnergyConsumption + CurrentPower * (Pilots[i].Fixes[j+1].Tsec - Pilots[i].Fixes[j].Tsec) / 3600;
-					Pilots[i].td1 := PilotEnergyConsumption;
-				end;
-			end;
-		end
-		else
-		begin
-			If Pilots[i].Fixes[j].EngineOn Then
-			begin
-				CurrentPower := RefCurrent * RefVoltage;
-				PilotEngineTime := PilotEngineTime + Pilots[i].Fixes[j+1].Tsec - Pilots[i].Fixes[j].Tsec;
-//				Pilots[i].Warning := Pilots[i].Warning + IntToStr(Round(Pilots[i].Fixes[j].Cur))+ ' * ' + IntToStr(Round(Pilots[i].Fixes[j].Vol)) + ' * ' + IntToStr(Pilots[i].Fixes[j+1].Tsec - Pilots[i].Fixes[j].Tsec) + #10;
-				PilotEnergyConsumption := PilotEnergyConsumption + CurrentPower * (Pilots[i].Fixes[j+1].Tsec - Pilots[i].Fixes[j].Tsec) / 3600;
-				Pilots[i].td1 := PilotEnergyConsumption;
-			end;
-		end;
-	  end;
-	end;
+    for j := 0 to GetArrayLength(Pilots[i].Fixes)-1 do
+    begin
+      if (Pilots[i].Fixes[j].Tsec > Pilots[i].start) and (Pilots[i].Fixes[j].Tsec < Pilots[i].finish) Then
+      begin
+        // If pilot has Cur and Vol
+        if Pilots[i].HasCur then
+        begin
+          if not Pilots[i].HasVol Then
+            Pilots[i].Fixes[j].Vol := RefVoltage;
+          if (Pilots[i].Fixes[j].Cur > 0) and (Pilots[i].Fixes[j].Vol > 0) then
+          begin
+            CurrentPower := Pilots[i].Fixes[j].Cur * Pilots[i].Fixes[j].Vol;
+            If CurrentPower > PowerTreshold then
+            begin
+              PilotEngineTime := PilotEngineTime + Pilots[i].Fixes[j+1].Tsec - Pilots[i].Fixes[j].Tsec;
+              // Pilots[i].Warning := Pilots[i].Warning + IntToStr(Round(Pilots[i].Fixes[j].Cur))+ ' * ' + IntToStr(Round(Pilots[i].Fixes[j].Vol)) + ' * ' + IntToStr(Pilots[i].Fixes[j+1].Tsec - Pilots[i].Fixes[j].Tsec) + #10;
+              PilotEnergyConsumption := PilotEnergyConsumption + CurrentPower * (Pilots[i].Fixes[j+1].Tsec - Pilots[i].Fixes[j].Tsec) / 3600;
+              Pilots[i].td1 := PilotEnergyConsumption;
+            end;
+          end;
+        end
+        else
+        begin
+          If Pilots[i].Fixes[j].EngineOn Then
+          begin
+            CurrentPower := RefCurrent * RefVoltage;
+            PilotEngineTime := PilotEngineTime + Pilots[i].Fixes[j+1].Tsec - Pilots[i].Fixes[j].Tsec;
+            // Pilots[i].Warning := Pilots[i].Warning + IntToStr(Round(Pilots[i].Fixes[j].Cur))+ ' * ' + IntToStr(Round(Pilots[i].Fixes[j].Vol)) + ' * ' + IntToStr(Pilots[i].Fixes[j+1].Tsec - Pilots[i].Fixes[j].Tsec) + #10;
+            PilotEnergyConsumption := PilotEnergyConsumption + CurrentPower * (Pilots[i].Fixes[j+1].Tsec - Pilots[i].Fixes[j].Tsec) / 3600;
+            Pilots[i].td1 := PilotEnergyConsumption;
+          end;
+        end;
+      end;
+    end;
 
-//! TEMPORARY END OF SCRIPT EXECUTION
-exit;
 
-//	// Debug output
-//	if Pilots[i].HasCur Then 
-//      Pilots[i].Warning := Pilots[i].Warning + 'HasCur = 1'+#10
-//	else
-//      Pilots[i].Warning := Pilots[i].Warning + 'HasCur = 0'+#10;
-//	if Pilots[i].HasVol Then 
-//      Pilots[i].Warning := Pilots[i].Warning + 'HasVol = 1'+#10
-//	else
-//      Pilots[i].Warning := Pilots[i].Warning + 'HasVol = 0'+#10;
-//	if Pilots[i].HasEnl Then 
-//      Pilots[i].Warning := Pilots[i].Warning + 'HasEnl = 1'+#10
-//	else
-//      Pilots[i].Warning := Pilots[i].Warning + 'HasEnl = 0'+#10;
-//	if Pilots[i].HasMop Then 
-//      Pilots[i].Warning := Pilots[i].Warning + 'HasMop = 1'+#10
-//	else
-//      Pilots[i].Warning := Pilots[i].Warning + 'HasMop = 0'+#10;
-	Pilots[i].Warning := Pilots[i].Warning + 'EngineTime = ' + IntToStr(Round(PilotEngineTime)) + ' s' + #10;
-	Pilots[i].Warning := Pilots[i].Warning + 'PowerConsumption = ' + IntToStr(Round(PilotEnergyConsumption)) + ' Wh' +#10;
-	if PilotEnergyConsumption > FreeAllowance then
-	  Pilots[i].Warning := Pilots[i].Warning 
-	    + 'Engine Penalty = ' + IntToStr(Round(PilotEnergyConsumption-FreeAllowance)) + ' Wh = ' 
-	    + FormatFloat('0.00',((PilotEnergyConsumption - FreeAllowance) * EnginePenaltyPerSec / 60)) + ' minutes' 
-		+#10;
+	// Debug output
+	if Pilots[i].HasCur Then 
+      Pilots[i].Warning := Pilots[i].Warning + 'HasCur = 1'+#10
+	else
+      Pilots[i].Warning := Pilots[i].Warning + 'HasCur = 0'+#10;
+	if Pilots[i].HasVol Then 
+      Pilots[i].Warning := Pilots[i].Warning + 'HasVol = 1'+#10
+	else
+      Pilots[i].Warning := Pilots[i].Warning + 'HasVol = 0'+#10;
+	if Pilots[i].HasEnl Then 
+      Pilots[i].Warning := Pilots[i].Warning + 'HasEnl = 1'+#10
+	else
+      Pilots[i].Warning := Pilots[i].Warning + 'HasEnl = 0'+#10;
+	if Pilots[i].HasMop Then 
+      Pilots[i].Warning := Pilots[i].Warning + 'HasMop = 1'+#10
+	else
+      Pilots[i].Warning := Pilots[i].Warning + 'HasMop = 0'+#10;
+    Pilots[i].Warning := Pilots[i].Warning + 'EngineTime = ' + IntToStr(Round(PilotEngineTime)) + ' s' + #10;
+    Pilots[i].Warning := Pilots[i].Warning + 'PowerConsumption = ' + IntToStr(Round(PilotEnergyConsumption)) + ' Wh' +#10;
+    if PilotEnergyConsumption > FreeAllowance then
+      Pilots[i].Warning := Pilots[i].Warning 
+        + 'Engine Penalty = ' + IntToStr(Round(PilotEnergyConsumption-FreeAllowance)) + ' Wh = ' 
+        + FormatFloat('0.00',((PilotEnergyConsumption - FreeAllowance) * EnginePenaltyPerSec / 60)) + ' minutes' 
+      +#10;
   end;
 
   
@@ -329,5 +327,4 @@ exit;
   // Info fields, also presented on the Score Sheets
   Info1 := 'Elapsed time race';
   Info1 := Info1 + ', results in minutes behind leader, handicapped'; 
-
 end.
