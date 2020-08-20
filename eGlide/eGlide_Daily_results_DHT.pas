@@ -13,7 +13,7 @@ const
 
 var
   Dm, D1,
-  Dt, n1, n2, n3, n4, N, D0, Vo, T0, Tm, Hmin,
+  Dt, n1, n2, n3, n4, N, D0, Vo, T0, Tm,
   Pm, Pdm, Pvm, Pn, F, Fcr, Day: Double;
 
   D, H, Dh, M, T, Dc, Pd, V, Vh, Pv, S, R_hcap, PilotDis : double;
@@ -206,7 +206,6 @@ exit;
 
 
 
-  Hmin := 100000;  // Lowest Handicap of all competitors in the class
   T0 := 10000000;
   Tm := 0; // slowest finisher time
   for i:=0 to GetArrayLength(Pilots)-1 do
@@ -215,16 +214,6 @@ exit;
     begin
       Pilots[i].speed := Pilots[i].dis / (Pilots[i].finish-Pilots[i].start);
     end;
-    If not Pilots[i].isHC Then
-    begin
-      If Pilots[i].Hcap < Hmin Then Hmin := Pilots[i].Hcap; // Lowest Handicap of all competitors in the class
-    end;
-  end;
-  If Hmin=0 Then 
-  begin
-    Info1 := '';
-	  Info2 := 'Error: Lowest handicap is zero!';
-  	Exit;
   end;
 
   for i:=0 to GetArrayLength(Pilots)-1 do
@@ -232,7 +221,7 @@ exit;
     If not Pilots[i].isHC Then
     begin
       // Find the lowest task time
-      T := (Pilots[i].finish-Pilots[i].start) * Pilots[i].Hcap/Hmin;
+      T := (Pilots[i].finish-Pilots[i].start);
       If (T < T0) and (Pilots[i].finish > 0) Then
       begin
         T0 := T;
@@ -330,7 +319,7 @@ exit;
   begin
     if Pilots[i].finish > 0 then
 	begin
-      Pilots[i].Points := -1.0*((Pilots[i].finish - Pilots[i].start)*Pilots[i].Hcap/Hmin - T0)/60;
+      Pilots[i].Points := -1.0*((Pilots[i].finish - Pilots[i].start) - T0)/60;
 	end
 	else
 	begin
