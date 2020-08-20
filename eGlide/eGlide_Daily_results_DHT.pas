@@ -194,28 +194,9 @@ begin
     end;
   end;
 
-
-
-
-
-//! TEMPORARY END OF SCRIPT EXECUTION
-exit;
-
-
-
-
-
-
+  // Find the slowest finisher
   T0 := 10000000;
-  Tm := 0; // slowest finisher time
-  for i:=0 to GetArrayLength(Pilots)-1 do
-  begin
-    if Pilots[i].finish > 0 Then
-    begin
-      Pilots[i].speed := Pilots[i].dis / (Pilots[i].finish-Pilots[i].start);
-    end;
-  end;
-
+  Tm := 0;
   for i:=0 to GetArrayLength(Pilots)-1 do
   begin
     If not Pilots[i].isHC Then
@@ -236,19 +217,9 @@ exit;
     end;
   end;
 
-
-
-
-
-
-
-
-
-
   // Energy Consumption by pilot on task
   for i:=0 to GetArrayLength(Pilots)-1 do
   begin
-    Pilots[i].Warning := '';
     PilotEnergyConsumption := 0;
   	PilotEngineTime := 0;
 
@@ -286,6 +257,9 @@ exit;
 		end;
 	  end;
 	end;
+
+//! TEMPORARY END OF SCRIPT EXECUTION
+exit;
 
 //	// Debug output
 //	if Pilots[i].HasCur Then 
