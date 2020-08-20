@@ -259,30 +259,29 @@ begin
     end;
 
 
-	// Debug output
+	//! Debug output
 	if Pilots[i].HasCur Then 
-      Pilots[i].Warning := Pilots[i].Warning + 'HasCur = 1'+#10
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasCur = 1'
 	else
-      Pilots[i].Warning := Pilots[i].Warning + 'HasCur = 0'+#10;
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasCur = 0';
 	if Pilots[i].HasVol Then 
-      Pilots[i].Warning := Pilots[i].Warning + 'HasVol = 1'+#10
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasVol = 1'
 	else
-      Pilots[i].Warning := Pilots[i].Warning + 'HasVol = 0'+#10;
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasVol = 0';
 	if Pilots[i].HasEnl Then 
-      Pilots[i].Warning := Pilots[i].Warning + 'HasEnl = 1'+#10
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasEnl = 1'
 	else
-      Pilots[i].Warning := Pilots[i].Warning + 'HasEnl = 0'+#10;
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasEnl = 0';
 	if Pilots[i].HasMop Then 
-      Pilots[i].Warning := Pilots[i].Warning + 'HasMop = 1'+#10
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasMop = 1'
 	else
-      Pilots[i].Warning := Pilots[i].Warning + 'HasMop = 0'+#10;
-    Pilots[i].Warning := Pilots[i].Warning + 'EngineTime = ' + IntToStr(Round(PilotEngineTime)) + ' s' + #10;
-    Pilots[i].Warning := Pilots[i].Warning + 'PowerConsumption = ' + IntToStr(Round(PilotEnergyConsumption)) + ' Wh' +#10;
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasMop = 0';
+    Pilots[i].Warning := Pilots[i].Warning + #10 + 'EngineTime = ' + IntToStr(Round(PilotEngineTime)) + ' s';
+    Pilots[i].Warning := Pilots[i].Warning + #10 + 'PowerConsumption = ' + IntToStr(Round(PilotEnergyConsumption)) + ' Wh';
     if PilotEnergyConsumption > FreeAllowance then
-      Pilots[i].Warning := Pilots[i].Warning 
+      Pilots[i].Warning := Pilots[i].Warning + #10 
         + 'Engine Penalty = ' + IntToStr(Round(PilotEnergyConsumption-FreeAllowance)) + ' Wh = ' 
-        + FormatFloat('0.00',((PilotEnergyConsumption - FreeAllowance) * EnginePenaltyPerSec / 60)) + ' minutes' 
-      +#10;
+        + FormatFloat('0.00',((PilotEnergyConsumption - FreeAllowance) * EnginePenaltyPerSec / 60)) + ' minutes';
   end;
 
   
@@ -313,17 +312,7 @@ begin
 	  
 	Pilots[i].Points := Round((Pilots[i].Points- Pilots[i].Penalty/60)*100)/100; // Expected penalty is in seconds
   end;
-  
-  // Data which is presented in the score-sheets
-  for i:=0 to GetArrayLength(Pilots)-1 do
-  begin
-    Pilots[i].sstart:=Pilots[i].start;
-    Pilots[i].sfinish:=Pilots[i].finish;
-    Pilots[i].sdis:=Pilots[i].dis;
-    Pilots[i].sspeed:=Pilots[i].speed;
-  end;
-//  Pilots[minIdx].Points := Round(T0/60*100)/100;
-  
+    
   // Info fields, also presented on the Score Sheets
   Info1 := 'Elapsed time race';
   Info1 := Info1 + ', results in minutes behind leader, handicapped'; 
