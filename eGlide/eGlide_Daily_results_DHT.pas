@@ -3,12 +3,11 @@ Program eGlide_Elapsed_time_scoring_with_Distance_Handicapping;
 const 
   Rmin = 500;         // Sector radius in meters that will be used by highest handicapped gliders.
   Rfinish = 0;        // Finish ring radius. Use zero if finish line is used.
-  UseHandicaps = 2;   // set to: 0 to disable handicapping, 1 to use handicaps, 2 is auto (handicaps only for club and multi-seat)
   PowerTreshold = 20; // In Watts [W]. If Current*Voltage is less than that, it won't count towards consumed energy.
   RefVoltage = 110;   // Fallback if nothing else is known about voltage used when engine is running
   RefCurrent = 200;   // Fallback if nothing is known about current consumption
   FreeAllowance = 2000; // Watt-hours. No penalty if less power was consumed
-  EnginePenaltyPerSec = 1000/15/60;    // Penalty in seconds per Watt-hour consumed over Free Allowance. 1000 Wh of energy allows you to cruise for 15 minutes.
+  EnginePenaltyPerSec = 15*60/1000;    // Penalty in seconds per Watt-hour consumed over Free Allowance. 1000 Wh of energy allows you to cruise for 15 minutes.
   Fa = 1.2;           // Amount of time penalty for next finisher / outlander
 
 var
