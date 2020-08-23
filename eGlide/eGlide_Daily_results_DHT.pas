@@ -3,6 +3,7 @@ Program eGlide_Elapsed_time_scoring_with_Distance_Handicapping;
 const 
   Rmin = 500;         // Sector radius in meters that will be used by highest handicapped gliders.
   Rfinish = 0;        // Finish ring radius. Use zero if finish line is used.
+  ManualRadius = false; // If this is set to true, you must enter R_hcap for each Handicap factor manually in function Radius(Hcap)
   PowerTreshold = 20; // In Watts [W]. If Current*Voltage is less than that, it won't count towards consumed energy.
   RefVoltage = 110;   // Fallback if nothing else is known about voltage used when engine is running
   RefCurrent = 200;   // Fallback if nothing is known about current consumption
@@ -48,8 +49,26 @@ begin
   	Exit;
   end;
 
-  R_hcap := TaskDis/2/(TaskLegs-1)*(1-(Hcap/Hmax))+Hcap/Hmax*Rmin;
-  R_hcap := Round(R_hcap/100)*100;
+  if ManualRadius then 
+  begin
+    case Hcap of
+      // You must enter one line for each Handicap factor in the competition for each competition day
+      108 : R_hcap := 4000; // All values are in meters
+      114 : R_hcap := 1800;
+      119 : R_hcap := 500;
+    else
+      begin
+        R_hcap := Rmin;
+      end;
+    end;
+  end
+  else
+  begin
+    //TODO This is true for all 180 degree turns in the task
+    //TODO Find a solution for sectors with turns less than 180 degrees
+    R_hcap := TaskDis/2/(TaskLegs-1)*(1-(Hcap/Hmax))+Hcap/Hmax*Rmin;
+    R_hcap := Round(R_hcap/100)*100;
+  end;
 
   Radius := R_hcap;
 end;
