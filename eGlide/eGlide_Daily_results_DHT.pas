@@ -15,11 +15,8 @@ var
   Dm, D1,
   Dt, n1, n2, n3, n4, N, D0, Vo, T0, Tm,
   Pm, Pdm, Pvm, Pn, F, Fcr, Day: Double;
-
   D, H, Dh, M, T, Dc, Pd, V, Vh, Pv, S, R_hcap, PilotDis : double;
-  
-  PmaxDistance, PmaxTime, PilotEnergyConsumption, CurrentPower, PilotEngineTime, EnginePenalty  : double;
-  
+  PmaxDistance, PmaxTime, PilotEnergyConsumption, CurrentPower, PilotEngineTime, EnginePenalty, ScoringFinish  : double;
   i,j, minIdx : integer;
   str : String;
   Interval, NumIntervals, GateIntervalPos, NumIntervalsPos, PilotStartInterval, PilotStartTime, PilotPEVStartTime, StartTimeBuffer, PilotLegs, TaskPoints : Integer;
@@ -80,7 +77,6 @@ begin
 
   // Calculate Distance flown for each pilot depending Radius(Hcap)
   TaskPoints := GetArrayLength(Task.Point);
-
   for i:=0 to GetArrayLength(Pilots)-1 do
   begin
     PilotDis := 0;
@@ -104,6 +100,7 @@ begin
     TPRounded := true;
     if GetArrayLength(Pilots[i].Leg) > 0 then
     begin
+      ScoringFinish := 0;
       for j:=0 to GetArrayLength(Pilots[i].Leg)-1 do
       begin
         if TPRounded then
@@ -125,16 +122,18 @@ begin
                 begin
                   TPRounded := false;
                   PilotDis := PilotDis + Pilots[i].Leg[j].d - Pilots[i].Leg[j+1].DisToTP;
+                  ScoringFinish := Pilots[i].Leg[j].finish;
                   //! Debug output
-                  Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start leg in sector but > R_hcap';
+                  Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start leg in sector but > R_hcap: ' + FormatFloat('0',ScoringFinish);
                 end;
               end
               else
               begin
-                PilotDis := PilotDis + Pilots[i].Leg[j].d;
                 TPRounded := false;
+                PilotDis := PilotDis + Pilots[i].Leg[j].d;
+                ScoringFinish := Pilots[i].Leg[j].finish;
                 //! Debug output
-                Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start leg did not reach 1st sector';
+                Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start leg did not reach 1st sector:' + FormatFloat('0',ScoringFinish);
               end;
             end;
 
@@ -168,10 +167,11 @@ begin
                 end
                 else
                 begin
-                  PilotDis := PilotDis + Pilots[i].Leg[j].d - Pilots[i].Leg[j+1].DisToTP;
                   TPRounded := false;
+                  PilotDis := PilotDis + Pilots[i].Leg[j].d - Pilots[i].Leg[j+1].DisToTP;
+                  ScoringFinish := Pilots[i].Leg[j].finish;
                   //! Debug output
-                  Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point in sector but > R_hcap';
+                  Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point in sector but > R_hcap: ' + FormatFloat('0',ScoringFinish);
                 end;
               end
               else
@@ -185,6 +185,10 @@ begin
           end;
         end;
       end;
+
+      // If pilot has missed a radius, ScoringFinish was already set to the correct time. If not, set ScoringFinish to Pilots[i].finish
+      if TPRounded Then
+        ScoringFinish := Pilots[i].finish;
     end
     else
     begin
@@ -241,9 +245,10 @@ begin
     PilotEnergyConsumption := 0;
   	PilotEngineTime := 0;
 
+    // Calculate Power consumption for a particular pilot
     for j := 0 to GetArrayLength(Pilots[i].Fixes)-1 do
     begin
-      if (Pilots[i].Fixes[j].Tsec > Pilots[i].start) and (Pilots[i].Fixes[j].Tsec < Pilots[i].finish) Then
+      if (Pilots[i].Fixes[j].Tsec > Pilots[i].start) and (Pilots[i].Fixes[j].Tsec < ScoringFinish) Then
       begin
         // If pilot has Cur and Vol
         if Pilots[i].HasCur then
@@ -273,65 +278,72 @@ begin
             Pilots[i].td1 := PilotEnergyConsumption;
           end;
         end;
-      end;
+      end
     end;
 
 
-	//! Debug output
-	if Pilots[i].HasCur Then 
-      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasCur = 1'
-	else
-      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasCur = 0';
-	if Pilots[i].HasVol Then 
-      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasVol = 1'
-	else
-      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasVol = 0';
-	if Pilots[i].HasEnl Then 
-      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasEnl = 1'
-	else
-      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasEnl = 0';
-	if Pilots[i].HasMop Then 
-      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasMop = 1'
-	else
-      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasMop = 0';
-    Pilots[i].Warning := Pilots[i].Warning + #10 + 'EngineTime = ' + IntToStr(Round(PilotEngineTime)) + ' s';
-    Pilots[i].Warning := Pilots[i].Warning + #10 + 'PowerConsumption = ' + IntToStr(Round(PilotEnergyConsumption)) + ' Wh';
-    if PilotEnergyConsumption > FreeAllowance then
-      Pilots[i].Warning := Pilots[i].Warning + #10 
-        + 'Engine Penalty = ' + IntToStr(Round(PilotEnergyConsumption-FreeAllowance)) + ' Wh = ' 
-        + FormatFloat('0.00',((PilotEnergyConsumption - FreeAllowance) * EnginePenaltyPerSec / 60)) + ' minutes';
-  end;
+    //! Debug output
+    if Pilots[i].HasCur Then 
+        Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasCur = 1'
+    else
+        Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasCur = 0';
+    if Pilots[i].HasVol Then 
+        Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasVol = 1'
+    else
+        Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasVol = 0';
+    if Pilots[i].HasEnl Then 
+        Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasEnl = 1'
+    else
+        Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasEnl = 0';
+    if Pilots[i].HasMop Then 
+        Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasMop = 1'
+    else
+        Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasMop = 0';
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'EngineTime = ' + IntToStr(Round(PilotEngineTime)) + ' s';
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'PowerConsumption = ' + IntToStr(Round(PilotEnergyConsumption)) + ' Wh';
+      if PilotEnergyConsumption > FreeAllowance then
+        Pilots[i].Warning := Pilots[i].Warning + #10 
+          + 'Engine Penalty = ' + IntToStr(Round(PilotEnergyConsumption-FreeAllowance)) + ' Wh = ' 
+          + FormatFloat('0.00',((PilotEnergyConsumption - FreeAllowance) * EnginePenaltyPerSec / 60)) + ' minutes';
+    end;
 
   
-  // ELAPSED TIME SCORING
-  for i:=0 to GetArrayLength(Pilots)-1 do 
-  begin
-    if Pilots[i].finish > 0 then
-	begin
-      Pilots[i].Points := -1.0*((Pilots[i].finish - Pilots[i].start) - T0)/60;
-	end
-	else
-	begin
-	  // Outlanders get 1.2 x the slowest finisher
-      Pilots[i].Points := (-1.0*Tm*Fa + T0)/60;
-	end;
+    // ELAPSED TIME SCORING
+    for i:=0 to GetArrayLength(Pilots)-1 do 
+    begin
+      if Pilots[i].finish > 0 then
+      begin
+          Pilots[i].Points := -1.0*((Pilots[i].finish - Pilots[i].start) - T0)/60;
+      end
+      else
+      begin
+        // Outlanders get 1.2 x the slowest finisher
+          Pilots[i].Points := (-1.0*Tm*Fa + T0)/60;
+      end;
 
-    // Engine penalty
-    PilotEnergyConsumption := Pilots[i].td1;
-    if PilotEnergyConsumption > FreeAllowance then
-	begin
-	  EnginePenalty := (PilotEnergyConsumption - FreeAllowance) * EnginePenaltyPerSec / 60; // Penalty in minutes
-	  Pilots[i].Points := Pilots[i].Points - EnginePenalty;
-	end;
-	
-	//Worst score a pilot can get is 1.2 times the last finisher's time.
-	if Pilots[i].Points < (-1.0*Tm*Fa+T0)/60 Then
-	  Pilots[i].Points := (-1.0*Tm*Fa+T0)/60;
-	  
-	Pilots[i].Points := Round((Pilots[i].Points- Pilots[i].Penalty/60)*100)/100; // Expected penalty is in seconds
-  end;
+      // Engine penalty
+      PilotEnergyConsumption := Pilots[i].td1;
+      if PilotEnergyConsumption > FreeAllowance then
+      begin
+        EnginePenalty := (PilotEnergyConsumption - FreeAllowance) * EnginePenaltyPerSec / 60; // Penalty in minutes
+        Pilots[i].Points := Pilots[i].Points - EnginePenalty;
+      end;
     
-  // Info fields, also presented on the Score Sheets
-  Info1 := 'Elapsed time race';
-  Info1 := Info1 + ', results in minutes behind leader, handicapped'; 
+      //Worst score a pilot can get is 1.2 times the last finisher's time.
+      if Pilots[i].Points < (-1.0*Tm*Fa+T0)/60 Then
+        Pilots[i].Points := (-1.0*Tm*Fa+T0)/60;
+        
+      Pilots[i].Points := Round((Pilots[i].Points- Pilots[i].Penalty/60)*100)/100; // Expected penalty is in seconds
+    end;
+    
+
+
+    // Info fields, also presented on the Score Sheets
+    // Info1 := 'Elapsed time race with distance handicapping.';
+    // Info1 := Info1 + 'Results are in minutes behind leader'; 
+    // for i := 0 to GetArrayLength(Pilots[i]) do
+    // begin
+
+    // end;
+    // Info2 := '';
 end.
