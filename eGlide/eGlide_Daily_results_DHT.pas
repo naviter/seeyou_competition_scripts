@@ -29,6 +29,7 @@ var
   R_hcap, Hmax, TaskDis, TaskLegs : double;
 begin
   TaskDis := Task.TotalDis;
+  //TODO Get rid of TaskLegs. It is just TaskPoints-1
   TaskLegs := GetArrayLength(Task.Point)-1;
 
   Hmax := 0;
@@ -150,6 +151,8 @@ begin
               end
               else
               begin
+                TPRounded := false;
+                ScoringFinish := Pilots[i].Leg[j].finish;
                 PilotDis := PilotDis + Pilots[i].Leg[j].d; 
                 Pilots[i].Warning := Pilots[i].Warning + #10 + 'Finish leg not completed';
               end;
@@ -179,6 +182,7 @@ begin
               begin
                 PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap;
                 TPRounded := false;
+                ScoringFinish := Pilots[i].Leg[j].finish;
                 //! Debug output
                 Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point sector not reached';
               end;
@@ -198,6 +202,9 @@ begin
     // If pilot has missed a radius, ScoringFinish was already set to the correct time. If not, set ScoringFinish to Pilots[i].finish
     if TPRounded Then
       ScoringFinish := Pilots[i].finish;
+
+    // Assign ScoringFinish to a temporary variable, to be used later in power consumption
+    Pilots[i].td2 := ScoringFinish;
     
     //! Debug output
     Pilots[i].Warning := Pilots[i].Warning + #10 + 'End of scoring = ' + FormatFloat('0',ScoringFinish);
@@ -251,6 +258,7 @@ begin
   begin
     PilotEnergyConsumption := 0;
   	PilotEngineTime := 0;
+    ScoringFinish := Pilots[i].td2;
 
     // Calculate Power consumption for a particular pilot
     for j := 0 to GetArrayLength(Pilots[i].Fixes)-1 do
@@ -345,12 +353,12 @@ begin
     
 
 
-    // Info fields, also presented on the Score Sheets
-    // Info1 := 'Elapsed time race with distance handicapping.';
-    // Info1 := Info1 + 'Results are in minutes behind leader'; 
-    // for i := 0 to GetArrayLength(Pilots[i]) do
-    // begin
+  // Info fields, also presented on the Score Sheets
+  // Info1 := 'Elapsed time race with distance handicapping.';
+  // Info1 := Info1 + 'Results are in minutes behind leader'; 
+  // for i := 0 to GetArrayLength(Pilots[i]) do
+  // begin
 
-    // end;
-    // Info2 := '';
+  // end;
+  // Info2 := '';
 end.
