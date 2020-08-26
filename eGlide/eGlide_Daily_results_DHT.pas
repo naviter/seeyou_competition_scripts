@@ -285,63 +285,63 @@ begin
             Pilots[i].td1 := PilotEnergyConsumption;
           end;
         end;
-      end
+      end;
     end;
 
 
     //! Debug output
-    if Pilots[i].HasCur Then 
-        Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasCur = 1'
+    if Pilots[i].HasCur Then
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasCur = 1'
     else
-        Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasCur = 0';
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasCur = 0';
     if Pilots[i].HasVol Then 
-        Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasVol = 1'
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasVol = 1'
     else
-        Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasVol = 0';
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasVol = 0';
     if Pilots[i].HasEnl Then 
-        Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasEnl = 1'
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasEnl = 1'
     else
-        Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasEnl = 0';
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasEnl = 0';
     if Pilots[i].HasMop Then 
-        Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasMop = 1'
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasMop = 1'
     else
-        Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasMop = 0';
-      Pilots[i].Warning := Pilots[i].Warning + #10 + 'EngineTime = ' + IntToStr(Round(PilotEngineTime)) + ' s';
-      Pilots[i].Warning := Pilots[i].Warning + #10 + 'PowerConsumption = ' + IntToStr(Round(PilotEnergyConsumption)) + ' Wh';
-      if PilotEnergyConsumption > FreeAllowance then
-        Pilots[i].Warning := Pilots[i].Warning + #10 
-          + 'Engine Penalty = ' + IntToStr(Round(PilotEnergyConsumption-FreeAllowance)) + ' Wh = ' 
-          + FormatFloat('0.00',((PilotEnergyConsumption - FreeAllowance) * EnginePenaltyPerSec / 60)) + ' minutes';
-    end;
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'HasMop = 0';
+    Pilots[i].Warning := Pilots[i].Warning + #10 + 'EngineTime = ' + IntToStr(Round(PilotEngineTime)) + ' s';
+    Pilots[i].Warning := Pilots[i].Warning + #10 + 'PowerConsumption = ' + IntToStr(Round(PilotEnergyConsumption)) + ' Wh';
+    if PilotEnergyConsumption > FreeAllowance then
+      Pilots[i].Warning := Pilots[i].Warning + #10 
+        + 'Engine Penalty = ' + IntToStr(Round(PilotEnergyConsumption-FreeAllowance)) + ' Wh = ' 
+        + FormatFloat('0.00',((PilotEnergyConsumption - FreeAllowance) * EnginePenaltyPerSec / 60)) + ' minutes';
+  end;
 
   
-    // ELAPSED TIME SCORING
-    for i:=0 to GetArrayLength(Pilots)-1 do 
+  // ELAPSED TIME SCORING
+  for i:=0 to GetArrayLength(Pilots)-1 do 
+  begin
+    if Pilots[i].finish > 0 then
     begin
-      if Pilots[i].finish > 0 then
-      begin
-          Pilots[i].Points := -1.0*((Pilots[i].finish - Pilots[i].start) - T0)/60;
-      end
-      else
-      begin
-        // Outlanders get 1.2 x the slowest finisher
-          Pilots[i].Points := (-1.0*Tm*Fa + T0)/60;
-      end;
-
-      // Engine penalty
-      PilotEnergyConsumption := Pilots[i].td1;
-      if PilotEnergyConsumption > FreeAllowance then
-      begin
-        EnginePenalty := (PilotEnergyConsumption - FreeAllowance) * EnginePenaltyPerSec / 60; // Penalty in minutes
-        Pilots[i].Points := Pilots[i].Points - EnginePenalty;
-      end;
-    
-      //Worst score a pilot can get is 1.2 times the last finisher's time.
-      if Pilots[i].Points < (-1.0*Tm*Fa+T0)/60 Then
-        Pilots[i].Points := (-1.0*Tm*Fa+T0)/60;
-        
-      Pilots[i].Points := Round((Pilots[i].Points- Pilots[i].Penalty/60)*100)/100; // Expected penalty is in seconds
+        Pilots[i].Points := -1.0*((Pilots[i].finish - Pilots[i].start) - T0)/60;
+    end
+    else
+    begin
+      // Outlanders get 1.2 x the slowest finisher
+        Pilots[i].Points := (-1.0*Tm*Fa + T0)/60;
     end;
+
+    // Engine penalty
+    PilotEnergyConsumption := Pilots[i].td1;
+    if PilotEnergyConsumption > FreeAllowance then
+    begin
+      EnginePenalty := (PilotEnergyConsumption - FreeAllowance) * EnginePenaltyPerSec / 60; // Penalty in minutes
+      Pilots[i].Points := Pilots[i].Points - EnginePenalty;
+    end;
+  
+    //Worst score a pilot can get is 1.2 times the last finisher's time.
+    if Pilots[i].Points < (-1.0*Tm*Fa+T0)/60 Then
+      Pilots[i].Points := (-1.0*Tm*Fa+T0)/60;
+      
+    Pilots[i].Points := Round((Pilots[i].Points- Pilots[i].Penalty/60)*100)/100; // Expected penalty is in seconds
+  end;
     
 
 
