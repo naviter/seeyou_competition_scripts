@@ -3,13 +3,13 @@ Program eGlide_Elapsed_time_scoring_with_Distance_Handicapping;
 const 
   Rmin = 500;         // Sector radius in meters that will be used by highest handicapped gliders.
   Rfinish = 0;        // Finish ring radius. Use zero if finish line is used.
-  ManualRadius = false; // If this is set to true, you must enter R_hcap for each Handicap factor manually in function Radius(Hcap)
+  ManualRadius = true; // If this is set to true, you must enter R_hcap for each Handicap factor manually in function Radius(Hcap)
   PowerTreshold = 20; // In Watts [W]. If Current*Voltage is less than that, it won't count towards consumed energy.
   RefVoltage = 110;   // Fallback if nothing else is known about voltage used when engine is running
   RefCurrent = 200;   // Fallback if nothing is known about current consumption
   FreeAllowance = 2000; // Watt-hours. No penalty if less power was consumed
   EnginePenaltyPerSec = 15*60/1000;    // Penalty in seconds per Watt-hour consumed over Free Allowance. 1000 Wh of energy allows you to cruise for 15 minutes.
-  Fa = 1.2;           // Amount of time penalty for next finisher / outlander
+  Fa = 1.15;           // Amount of time penalty for next finisher / outlander
 
 var
   Dm, D1,
@@ -51,7 +51,8 @@ begin
     case Hcap of
       // You must enter one line for each Handicap factor in the competition for each competition day
       108 : R_hcap := 4000; // All values are in meters
-      114 : R_hcap := 1800;
+      114 : R_hcap := 3000;
+      117 : R_hcap := 1500;
       119 : R_hcap := 500;
     else
       begin
@@ -186,9 +187,6 @@ begin
         end;
       end;
 
-      // If pilot has missed a radius, ScoringFinish was already set to the correct time. If not, set ScoringFinish to Pilots[i].finish
-      if TPRounded Then
-        ScoringFinish := Pilots[i].finish;
     end
     else
     begin
@@ -197,7 +195,16 @@ begin
       PilotDis := 0;
     end;
 
+    // If pilot has missed a radius, ScoringFinish was already set to the correct time. If not, set ScoringFinish to Pilots[i].finish
+    if TPRounded Then
+      ScoringFinish := Pilots[i].finish;
+    
     //! Debug output
+    Pilots[i].Warning := Pilots[i].Warning + #10 + 'End of scoring = ' + FormatFloat('0',ScoringFinish);
+    if TPRounded Then
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'Task completed: True'
+    else
+      Pilots[i].Warning := Pilots[i].Warning + #10 + 'Task completed: False';
     Pilots[i].Warning := Pilots[i].Warning + #10 + 'PilotDis = ' + FormatFloat('0',PilotDis);
 
     // Set values for output
