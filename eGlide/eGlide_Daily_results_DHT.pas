@@ -8,7 +8,7 @@ const
   RefVoltage = 110;   // Fallback if nothing else is known about voltage used when engine is running
   RefCurrent = 200;   // Fallback if nothing is known about current consumption
   FreeAllowance = 2000; // Watt-hours. No penalty if less power was consumed
-  EnginePenaltyPerSec = 15*60/1000;    // Penalty in seconds per Watt-hour consumed over Free Allowance. 1000 Wh of energy allows you to cruise for 15 minutes.
+  EnginePenaltyPerSec = 1;    // Penalty in seconds per Watt-hour consumed over Free Allowance. 1000 Wh of energy allows you to cruise for 15 minutes.
   Fa = 1.15;           // Amount of time penalty for next finisher / outlander
 
 var
