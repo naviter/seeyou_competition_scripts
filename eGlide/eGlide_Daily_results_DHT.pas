@@ -229,7 +229,7 @@ begin
     begin
       Pilots[i].sfinish := Pilots[i].finish;
       if Pilots[i].finish > 0 then
-        Pilots[i].sspeed := PilotDis / (Pilots[i].finish - Pilots[i].start);
+        Pilots[i].sspeed := PilotDis / (Pilots[i].finish - Task.NoStartBeforeTime);
     end;
   end;
 
@@ -241,7 +241,7 @@ begin
     If not Pilots[i].isHC Then
     begin
       // Find the lowest task time
-      T := (Pilots[i].finish-Pilots[i].start);
+      T := (Pilots[i].finish-Task.NoStartBeforeTime);
       If (T < T0) and (Pilots[i].finish > 0) Then
       begin
         T0 := T;
