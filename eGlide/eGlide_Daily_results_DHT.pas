@@ -51,10 +51,13 @@ begin
   begin
     case Hcap of
       // You must enter one line for each Handicap factor in the competition for each competition day
-      108 : R_hcap := 4000; // All values are in meters
-      114 : R_hcap := 3000;
-      117 : R_hcap := 1500;
-      119 : R_hcap := 500;
+       94 : R_hcap := 6900; // All values are in meters
+      108 : R_hcap := 3500;
+      114 : R_hcap := 2100;
+      117 : R_hcap := 1400;
+      118 : R_hcap := 1200;
+      119 : R_hcap := 900;
+      120 : R_hcap := 500;
     else
       begin
         R_hcap := Rmin;
@@ -328,7 +331,7 @@ begin
   begin
     if Pilots[i].finish > 0 then
     begin
-        Pilots[i].Points := -1.0*((Pilots[i].finish - Pilots[i].start) - T0)/60;
+        Pilots[i].Points := -1.0*((Pilots[i].finish - Task.NoStartBeforeTime) - T0)/60;
     end
     else
     begin
