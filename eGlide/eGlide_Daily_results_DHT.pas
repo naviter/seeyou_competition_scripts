@@ -357,8 +357,8 @@ begin
 
 
   // Info fields, also presented on the Score Sheets
-  // Info1 := 'Elapsed time race with distance handicapping.';
-  // Info1 := Info1 + 'Results are in minutes behind leader'; 
+  Info1 := 'Elapsed time race with distance handicapping.';
+  Info1 := Info1 + 'Results are in minutes behind leader'; 
   // for i := 0 to GetArrayLength(Pilots[i]) do
   // begin
 
