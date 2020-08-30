@@ -233,7 +233,7 @@ begin
     end;
   end;
 
-  // Find the slowest finisher
+  // Find the fastest and slowest finisher - T0 and Tm
   T0 := 10000000;
   Tm := 0;
   for i:=0 to GetArrayLength(Pilots)-1 do
@@ -336,7 +336,7 @@ begin
     else
     begin
       // Outlanders get 1.2 x the slowest finisher
-        Pilots[i].Points := (-1.0*Tm*Fa + T0)/60;
+        Pilots[i].Points := ( T0 - Tm*Fa )/60;
     end;
 
     // Engine penalty
@@ -348,8 +348,8 @@ begin
     end;
   
     //Worst score a pilot can get is 1.2 times the last finisher's time.
-    if Pilots[i].Points < (-1.0*Tm*Fa+T0)/60 Then
-      Pilots[i].Points := (-1.0*Tm*Fa+T0)/60;
+    if Pilots[i].Points < ( T0 - Tm*Fa )/60 Then
+      Pilots[i].Points := ( T0 - Tm*Fa )/60;
       
     Pilots[i].Points := Round((Pilots[i].Points- Pilots[i].Penalty/60)*100)/100; // Expected penalty is in seconds
   end;
