@@ -257,6 +257,10 @@ begin
     end;
   end;
 
+  //! Debug output
+  Info4 := 'Fastest (T0) = ' + FormatFloat('0',T0);
+  Info4 := Info4 + '; Slowest (Tm) = ' + FormatFloat('0',Tm);
+
   // Energy Consumption by pilot on task
   for i:=0 to GetArrayLength(Pilots)-1 do
   begin
@@ -330,9 +334,16 @@ begin
   // ELAPSED TIME SCORING
   for i:=0 to GetArrayLength(Pilots)-1 do 
   begin
+    PilotEnergyConsumption := Pilots[i].td1;
     if Pilots[i].finish > 0 then
     begin
-        Pilots[i].Points := -1.0*((Pilots[i].finish - Task.NoStartBeforeTime) - T0)/60;
+      Pilots[i].Points := ( T0 - (Pilots[i].finish - Task.NoStartBeforeTime) )/60;
+      // Engine penalty
+      if PilotEnergyConsumption > FreeAllowance then
+      begin
+        EnginePenalty := (PilotEnergyConsumption - FreeAllowance) * EnginePenaltyPerSec / 60; // Penalty in minutes
+        Pilots[i].Points := Pilots[i].Points - EnginePenalty;
+      end;
     end
     else
     begin
@@ -340,19 +351,11 @@ begin
         Pilots[i].Points := ( T0 - Tm*Fa )/60;
     end;
 
-    // Engine penalty
-    PilotEnergyConsumption := Pilots[i].td1;
-    if PilotEnergyConsumption > FreeAllowance then
-    begin
-      EnginePenalty := (PilotEnergyConsumption - FreeAllowance) * EnginePenaltyPerSec / 60; // Penalty in minutes
-      Pilots[i].Points := Pilots[i].Points - EnginePenalty;
-    end;
-  
     //Worst score a pilot can get is 1.2 times the last finisher's time.
     if Pilots[i].Points < ( T0 - Tm*Fa )/60 Then
       Pilots[i].Points := ( T0 - Tm*Fa )/60;
       
-    Pilots[i].Points := Round((Pilots[i].Points- Pilots[i].Penalty/60)*100)/100; // Expected penalty is in seconds
+    Pilots[i].Points := Round((Pilots[i].Points - Pilots[i].Penalty/60)*100)/100; // Expected penalty is in seconds
   end;
     
 
