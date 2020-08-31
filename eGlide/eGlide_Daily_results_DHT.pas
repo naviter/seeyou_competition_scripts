@@ -7,6 +7,7 @@ const
   PowerTreshold = 20; // In Watts [W]. If Current*Voltage is less than that, it won't count towards consumed energy.
   RefVoltage = 110;   // Fallback if nothing else is known about voltage used when engine is running
   RefCurrent = 200;   // Fallback if nothing is known about current consumption
+  RefPower = 120*280; // Fallback when only ENL is available (Antares in case of E2Glide 2020)
   FreeAllowance = 2000; // Watt-hours. No penalty if less power was consumed
   EnginePenaltyPerSec = 1;    // Penalty in seconds per Watt-hour consumed over Free Allowance. 1000 Wh of energy allows you to cruise for 15 minutes.
   Fa = 1.15;           // Amount of time penalty for next finisher / outlander
@@ -289,7 +290,7 @@ begin
         begin
           If Pilots[i].Fixes[j].EngineOn Then
           begin
-            CurrentPower := RefCurrent * RefVoltage;
+            CurrentPower := RefPower;
             PilotEngineTime := PilotEngineTime + Pilots[i].Fixes[j+1].Tsec - Pilots[i].Fixes[j].Tsec;
             // Pilots[i].Warning := Pilots[i].Warning + IntToStr(Round(Pilots[i].Fixes[j].Cur))+ ' * ' + IntToStr(Round(Pilots[i].Fixes[j].Vol)) + ' * ' + IntToStr(Pilots[i].Fixes[j+1].Tsec - Pilots[i].Fixes[j].Tsec) + #10;
             PilotEnergyConsumption := PilotEnergyConsumption + CurrentPower * (Pilots[i].Fixes[j+1].Tsec - Pilots[i].Fixes[j].Tsec) / 3600;
