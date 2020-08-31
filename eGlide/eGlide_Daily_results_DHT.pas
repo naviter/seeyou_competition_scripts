@@ -52,13 +52,13 @@ begin
   begin
     case Hcap of
       // You must enter one line for each Handicap factor in the competition for each competition day
-       94 : R_hcap := 6900; // All values are in meters
-      108 : R_hcap := 3500;
-      114 : R_hcap := 2100;
-      117 : R_hcap := 1400;
-      118 : R_hcap := 1200;
-      119 : R_hcap := 900;
-      120 : R_hcap := 500;
+       94 : R_hcap := 16100; // All values are in meters
+      108 : R_hcap := 10300;
+      114 : R_hcap := 7800;
+      117 : R_hcap := 6600;
+      118 : R_hcap := 6100;
+      119 : R_hcap := 5700;
+      120 : R_hcap := 5000;
     else
       begin
         R_hcap := Rmin;
@@ -122,7 +122,7 @@ begin
                 begin
                   PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap;
                   //! Debug output
-                  Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start OK';
+                  Pilots[i].Warning := Pilots[i].Warning + #10 + 'First leg OK';
                 end
                 else
                 begin
@@ -130,7 +130,7 @@ begin
                   PilotDis := PilotDis + Pilots[i].Leg[j].d - Pilots[i].Leg[j+1].DisToTP;
                   ScoringFinish := Pilots[i].Leg[j].finish;
                   //! Debug output
-                  Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start leg in sector but > R_hcap: ' + FormatFloat('0',ScoringFinish);
+                  Pilots[i].Warning := Pilots[i].Warning + #10 + 'First leg in sector but > R_hcap: ' + FormatFloat('0',ScoringFinish);
                 end;
               end
               else
@@ -139,7 +139,7 @@ begin
                 PilotDis := PilotDis + Pilots[i].Leg[j].d;
                 ScoringFinish := Pilots[i].Leg[j].finish;
                 //! Debug output
-                Pilots[i].Warning := Pilots[i].Warning + #10 + 'Start leg did not reach 1st sector:' + FormatFloat('0',ScoringFinish);
+                Pilots[i].Warning := Pilots[i].Warning + #10 + 'First leg did not reach 1st sector:' + FormatFloat('0',ScoringFinish);
               end;
             end;
 
@@ -151,7 +151,7 @@ begin
               begin
                 PilotDis := PilotDis + Pilots[i].Leg[j].d - R_hcap - Rfinish; 
                 //! Debug output
-                Pilots[i].Warning := Pilots[i].Warning + #10 + 'Finish OK';
+                Pilots[i].Warning := Pilots[i].Warning + #10 + 'Finish leg OK';
               end
               else
               begin
@@ -171,7 +171,7 @@ begin
                 begin
                   PilotDis := PilotDis + Pilots[i].Leg[j].d - 2*R_hcap;
                   //! Debug output
-                  Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point OK';
+                  Pilots[i].Warning := Pilots[i].Warning + #10 + IntToStr(j+1) + '. leg OK';
                 end
                 else
                 begin
@@ -179,7 +179,7 @@ begin
                   PilotDis := PilotDis + Pilots[i].Leg[j].d - Pilots[i].Leg[j+1].DisToTP;
                   ScoringFinish := Pilots[i].Leg[j].finish;
                   //! Debug output
-                  Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point in sector but > R_hcap: ' + FormatFloat('0',ScoringFinish);
+                  Pilots[i].Warning := Pilots[i].Warning + #10 + IntToStr(j+1) + '. leg in sector but > R_hcap: ' + FormatFloat('0',ScoringFinish);
                 end;
               end
               else
@@ -188,7 +188,7 @@ begin
                 TPRounded := false;
                 ScoringFinish := Pilots[i].Leg[j].finish;
                 //! Debug output
-                Pilots[i].Warning := Pilots[i].Warning + #10 + 'Point sector not reached';
+                Pilots[i].Warning := Pilots[i].Warning + #10 + IntToStr(j+1) + '. leg sector not reached';
               end;
             end;
           end;
