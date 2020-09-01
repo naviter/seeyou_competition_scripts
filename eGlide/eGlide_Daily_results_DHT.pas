@@ -8,7 +8,7 @@ const
   RefVoltage = 110;   // Fallback if nothing else is known about voltage used when engine is running
   RefCurrent = 200;   // Fallback if nothing is known about current consumption
   RefPower = 120*280; // Fallback when only ENL is available (Antares in case of E2Glide 2020)
-  FreeAllowance = 2000; // Watt-hours. No penalty if less power was consumed
+  FreeAllowance = 2500; // Watt-hours. No penalty if less power was consumed
   EnginePenaltyPerSec = 1;    // Penalty in seconds per Watt-hour consumed over Free Allowance. 1000 Wh of energy allows you to cruise for 15 minutes.
   Fa = 1.15;           // Amount of time penalty for next finisher / outlander
 
@@ -52,13 +52,13 @@ begin
   begin
     case Hcap of
       // You must enter one line for each Handicap factor in the competition for each competition day
-       94 : R_hcap := 16100; // All values are in meters
-      108 : R_hcap := 10300;
-      114 : R_hcap := 7800;
-      117 : R_hcap := 6600;
-      118 : R_hcap := 6100;
-      119 : R_hcap := 5700;
-      120 : R_hcap := 5000;
+       94 : R_hcap := 9500; // All values are in meters
+      108 : R_hcap := 5500;
+      114 : R_hcap := 3800;
+      117 : R_hcap := 3000;
+      118 : R_hcap := 2700;
+      119 : R_hcap := 2500;
+      120 : R_hcap := 2000;
     else
       begin
         R_hcap := Rmin;
@@ -234,33 +234,6 @@ begin
     end;
   end;
 
-  // Find the fastest and slowest finisher - T0 and Tm
-  T0 := 10000000;
-  Tm := 0;
-  for i:=0 to GetArrayLength(Pilots)-1 do
-  begin
-    If not Pilots[i].isHC Then
-    begin
-      // Find the lowest task time
-      T := (Pilots[i].finish-Task.NoStartBeforeTime);
-      If (T < T0) and (Pilots[i].finish > 0) Then
-      begin
-        T0 := T;
-        minIdx := i;
-      end;
-
-      // Find the slowest finisher
-      if T > Tm Then
-      begin
-        Tm := T;
-      end;
-    end;
-  end;
-
-  //! Debug output
-  Info4 := 'Fastest (T0) = ' + FormatFloat('0',T0);
-  Info4 := Info4 + '; Slowest (Tm) = ' + FormatFloat('0',Tm);
-
   // Energy Consumption by pilot on task
   for i:=0 to GetArrayLength(Pilots)-1 do
   begin
@@ -329,6 +302,41 @@ begin
         + 'Engine Penalty = ' + IntToStr(Round(PilotEnergyConsumption-FreeAllowance)) + ' Wh = ' 
         + FormatFloat('0.00',((PilotEnergyConsumption - FreeAllowance) * EnginePenaltyPerSec / 60)) + ' minutes';
   end;
+
+  // Find the fastest and slowest finisher - T0 and Tm. Engine penalty included
+  T0 := 10000000;
+  Tm := 0;
+  for i:=0 to GetArrayLength(Pilots)-1 do
+  begin
+    If not Pilots[i].isHC Then
+    begin
+      // Find the lowest task time
+      EnginePenalty := 0;
+      PilotEnergyConsumption := Pilots[i].td1;
+      // Engine penalty
+      if PilotEnergyConsumption > FreeAllowance then
+      begin
+        EnginePenalty := (PilotEnergyConsumption - FreeAllowance) * EnginePenaltyPerSec / 60; // Penalty in minutes
+        Pilots[i].Points := Pilots[i].Points - EnginePenalty;
+      end;
+      T := ( (Pilots[i].finish + EnginePenalty - Task.NoStartBeforeTime);
+      If (T < T0) and (Pilots[i].finish > 0) Then
+      begin
+        T0 := T;
+        minIdx := i;
+      end;
+
+      // Find the slowest finisher
+      if T > Tm Then
+      begin
+        Tm := T;
+      end;
+    end;
+  end;
+
+  //! Debug output
+  Info4 := 'Fastest (T0) = ' + FormatFloat('0',T0);
+  Info4 := Info4 + '; Slowest (Tm) = ' + FormatFloat('0',Tm);
 
   
   // ELAPSED TIME SCORING
