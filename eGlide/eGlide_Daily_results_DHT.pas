@@ -319,7 +319,7 @@ begin
         EnginePenalty := (PilotEnergyConsumption - FreeAllowance) * EnginePenaltyPerSec / 60; // Penalty in minutes
         Pilots[i].Points := Pilots[i].Points - EnginePenalty;
       end;
-      T := ( (Pilots[i].finish + EnginePenalty - Task.NoStartBeforeTime);
+      T := Pilots[i].finish + EnginePenalty - Task.NoStartBeforeTime;
       If (T < T0) and (Pilots[i].finish > 0) Then
       begin
         T0 := T;
