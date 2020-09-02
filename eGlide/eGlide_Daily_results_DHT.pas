@@ -8,7 +8,7 @@ const
   RefVoltage = 110;   // Fallback if nothing else is known about voltage used when engine is running
   RefCurrent = 200;   // Fallback if nothing is known about current consumption
   RefPower = 120*280; // Fallback when only ENL is available (Antares in case of E2Glide 2020)
-  FreeAllowance = 2500; // Watt-hours. No penalty if less power was consumed
+  FreeAllowance = 2000; // Watt-hours. No penalty if less power was consumed
   EnginePenaltyPerSec = 1;    // Penalty in seconds per Watt-hour consumed over Free Allowance. 1000 Wh of energy allows you to cruise for 15 minutes.
   Fa = 1.15;           // Amount of time penalty for next finisher / outlander
 
@@ -52,13 +52,13 @@ begin
   begin
     case Hcap of
       // You must enter one line for each Handicap factor in the competition for each competition day
-       94 : R_hcap := 9500; // All values are in meters
-      108 : R_hcap := 5500;
-      114 : R_hcap := 3800;
-      117 : R_hcap := 3000;
-      118 : R_hcap := 2700;
-      119 : R_hcap := 2500;
-      120 : R_hcap := 2000;
+       94 : R_hcap := 10600; // All values are in meters
+      108 : R_hcap := 5600;
+      114 : R_hcap := 3400;
+      117 : R_hcap := 2300;
+      118 : R_hcap := 2000;
+      119 : R_hcap := 1600;
+      120 : R_hcap := 1000;
     else
       begin
         R_hcap := Rmin;
