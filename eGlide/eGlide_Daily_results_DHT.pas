@@ -52,13 +52,13 @@ begin
   begin
     case Hcap of
       // You must enter one line for each Handicap factor in the competition for each competition day
-       94 : R_hcap := 10600; // All values are in meters
-      108 : R_hcap := 5600;
-      114 : R_hcap := 3400;
-      117 : R_hcap := 2300;
-      118 : R_hcap := 2000;
-      119 : R_hcap := 1600;
-      120 : R_hcap := 1000;
+       94 : R_hcap := 14400; // All values are in meters
+      108 : R_hcap := 7100;
+      114 : R_hcap := 4000;
+      117 : R_hcap := 2400;
+      118 : R_hcap := 1900;
+      119 : R_hcap := 1400;
+      120 : R_hcap := 500;
     else
       begin
         R_hcap := Rmin;
@@ -194,7 +194,8 @@ begin
           end;
         end;
       end;
-
+      //TODO In case of control points, add length to PilotDis
+      //PilotDis := PilotDis+something.
     end
     else
     begin
