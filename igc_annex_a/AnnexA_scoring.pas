@@ -1,4 +1,8 @@
 Program SC3A_scoring;
+// Version 8.01, Date 20.04.2021
+//   . added ReadDayTagParameter() function to read any DayTag parameter
+//   . parameters in DayTag now have to be separated by space (only)
+//   . example: "Inteval=10 NumIntervals=7"
 // Version 8.00, Date 26.06.2019
 //   . merged all scripts into one
 //   . by default UseHandicaps is in auto mode
@@ -49,7 +53,7 @@ var
   
   i,j : integer;
   str : String;
-  Interval, NumIntervals, GateIntervalPos, NumIntervalsPos, PilotStartInterval, PilotStartTime, PilotPEVStartTime, StartTimeBuffer : Integer;
+  Interval, NumIntervals, PilotStartInterval, PilotStartTime, PilotPEVStartTime, StartTimeBuffer : Integer;
   AAT : boolean;
   Auto_Hcaps_on : boolean;
 
@@ -63,6 +67,33 @@ begin
 
   MinValue := m;
 end;
+
+
+Function ReadDayTagParameter ( name : string; default : double ) : double;
+var
+  sp, tp : Integer;
+  sub : string;
+begin
+  sp := Pos(UpperCase(name) + '=',UpperCase(DayTag));
+
+  if (sp > 0) then
+  begin
+    sub:= Copy(DayTag,sp + Length(name) + 1,Length(DayTag));
+
+    tp := Pos(' ',sub);
+    if (tp > 0) then
+      sub:= Copy(sub,0,tp-1);
+
+    tp := Pos(',',sub);
+    if (tp > 0) then
+      sub := Copy (sub,0,tp-1) + '.' + Copy (sub,tp+1,Length(sub));
+
+    ReadDayTagParameter := StrToFloat(sub);
+  end
+  else
+    ReadDayTagParameter := default;            // string not found
+end;
+
 
 begin
 
@@ -120,11 +151,8 @@ begin
   
   StartTimeBuffer := 30; // Start time buffer zone. If one starts 30 seconds too early he is scored by his actual start time
   
-  GateIntervalPos := Pos('Interval=',DayTag);
-  NumIntervalsPos := Pos('NumIntervals=',DayTag);															// One separator is assumed and it is assumed that Interval will be the first parameter in DayTag.
-
-  Interval := StrToInt( Copy(DayTag,GateIntervalPos+9,(NumIntervalsPos-GateIntervalPos-10)), 0 )*60;		// Interval length in seconds. Second parameter in IntToStr is fallback value
-  NumIntervals := StrToInt( Copy(DayTag,NumIntervalsPos+13,5), 0 );											// Number of intervals
+  Interval := Trunc(ReadDayTagParameter('Interval',0)) * 60;			// Interval length in seconds
+  NumIntervals := Trunc(ReadDayTagParameter('NumIntervals',0));			// Number of intervals
 
   if Interval > 0 Then
     Info3 := 'Start time interval = '+IntToStr(Interval div 60)+'min';
