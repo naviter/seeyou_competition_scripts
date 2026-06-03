@@ -1,8 +1,19 @@
-Program IGC_Annex_A_scoring_WGC2023;
+Program Annex_A_scoring_2026_TEST;
 // Collaborate on writing scripts at Github:
 // https://github.com/naviter/seeyou_competition_scripts/
 //
-// Version 10.0 Date 2023.10.30 by Neil Campbell v3_1
+// Version 11.00, Date 3.06.2026 by Wojciech Scigala
+//   . no negative daily points after penalties deduction
+//   . add missed PEV-gate information (in seconds)
+//   . AllUserWarn renamed to PevUserWarn
+//   . if PevUserWarn = 0 all data is shown anyway if there is PEV fault
+//   . show warning if there is potential start after selected one
+//   . limited support for Cylinder Start: set CylinderStart=1 in DayTag
+//     throws an error if PEV is different than calculated Start Time
+//   . start groundspeed calculated now for +/- 8 seconds period, but this is still
+//     not compliant with Annex A (not possible to implement completely)
+
+// Version 10.00 Date 30.10.2023 by Neil Campbell
 //   . Incorporate changes required for Annex A 2023 Edition and WGC 2023 Local Procedures
 //       . Support for 7.4.5b Starting Procedures - Pre-start altitude
 //       . enter "PreStartAlt=nnn" in DayTag where nnn is altitude in m
@@ -11,7 +22,6 @@ Program IGC_Annex_A_scoring_WGC2023;
 //   . include newline between user warnings to improve readability
 //   . ignore PEV markers after start
 //
-
 // Version 9.03, Date 19.04.2023 by Andrej Kolar
 //   . Renamed Vo to V0 for consistency with T0 and D0
 // Version 9.02, Date 17.07.2022 by Andrej Kolar
@@ -64,7 +74,7 @@ Program IGC_Annex_A_scoring_WGC2023;
 
 const UseHandicaps = 2;   // set to: 0 to disable handicapping, 1 to use handicaps, 2 is auto (handicaps only for club and multi-seat)
       PevStartTimeBuffer = 30; // PEV which is less than PevStartTimeBuffer seconds later than last PEV will be ignored and not counted
-   
+
 var
   Dm, D1,
   Dt, n1, n2, n3, n4, N, D0, V0, T0, Hmin,
@@ -75,7 +85,7 @@ var
   PmaxDistance, PmaxTime : double;
   
   i,j : integer;
-  PevWaitTime,PEVStartWindow,AllUserWrng, PilotStartInterval, PilotStartTime, PilotPEVStartTime,StartTimeBuffer,MaxStartSpeed : Integer;
+  PevWaitTime,PEVStartWindow,PevUserWrng, PilotStartInterval, PilotStartTime, PilotPEVStartTime,StartTimeBuffer,MaxStartSpeed : Integer;
   AAT : boolean;
   Auto_Hcaps_on : boolean;
   
@@ -85,6 +95,7 @@ var
   PevWarning : String;
   Ignore_PEV,PEVStartNotValid : boolean;  
   Pevcount, LastPev  : Integer; 
+  PevFault : boolean;
 
   //Prestart Altitude 
   PreStartAltLimit, NbrFixes,  MinPreStartAltTime : Integer;
@@ -96,6 +107,14 @@ var
   BelowAltFound : boolean;
   FixDuration, LaunchAboveAltFix, LastFixTime, FGAboveAltFix, LowPointTsec : Integer;
   MinimumAlt, LowPoint : Double;
+
+  //Loss of height
+  MaxLoH : integer;
+  PilotStartAlt : double;
+
+  //Cylinder Start
+  CylinderStart : integer;
+
 
 Function MinValue( a,b,c : double ) : double;
 var m : double;
@@ -207,7 +226,9 @@ begin
   PEVWaitTime := Trunc(ReadDayTagParameter('PEVWAITTIME',0)) * 60;	// WaitTime in seconds 
   PEVStartWindow := Trunc(ReadDayTagParameter('PEVSTARTWINDOW',0))* 60; // StartWindow open in seconds
   MaxStartSpeed := Trunc(ReadDayTagParameter('MAXSTSPD',0));		// Startspeed interpolation done if MaxStartSpeed (in km/h) >0
-  AllUserWrng := Trunc(ReadDayTagParameter('ALLUSERWRNG',1));		// Output of All UserWarnings with PEVs: ON=1(for debugging and testing) OFF=0  
+  PevUserWrng := Trunc(ReadDayTagParameter('PEVUSERWRNG',0));		// Output of All UserWarnings with PEVs: ON=1(for debugging and testing) OFF=0  
+  MaxLoH := Trunc(ReadDayTagParameter('MAXLOH',-1));			// Loss of Height limit
+  CylinderStart := Trunc(ReadDayTagParameter('CYLINDERSTART',0));	// Cylinder Start option (only checks if PEV = Start time)
 
   // if DayTag variables PEVWaitTime and PEVStartWindow are set (>0) then PEV Marker Start Warnings are shown 
   if (PEVWaitTime > 0) and (PEVStartWindow> 0) then																					// Only display number of intervals if it is not zero
@@ -255,7 +276,7 @@ begin
   end;
   
   // Annex A version 2022 has removed the capability of Hmin in the results. Simply removing Hmin doesn't work for comps where Handicaps are given as 108, 125 etc. Hence this addition.
-  if Hmin >= 500 then Hmin = 1000;                   // Not sure if there are any comps that uses Annex A rules with Handicaps over 10000?
+  if Hmin >= 500 then Hmin := 1000;                   // Not sure if there are any comps that uses Annex A rules with Handicaps over 10000?
   if (Hmin >= 50) and (Hmin < 500) then Hmin := 100; // For comps that use Handicaps typically between 70 and 130
   if (Hmin >= 5) and (Hmin < 50) then Hmin := 10;    // Just in case
   if (Hmin >= 0.5) and (Hmin < 5) then Hmin := 1;    // Typical IGC Annex A comps with handicaps around 1.000
@@ -373,8 +394,10 @@ begin
       Pd := Pdm * (Pilots[i].dis*Hmin/Pilots[i].Hcap/D0);
     end;
     
-    // Pilot's score
+    // Pilot's score - can't be negative after penalties
     Pilots[i].Points := Round( F*Fcr*(Pd+Pv) - Pilots[i].Penalty );
+    if Pilots[i].Points < 0 Then
+      Pilots[i].Points := 0
   end;
   
   // Data which is presented in the score-sheets
@@ -413,13 +436,14 @@ begin
   Info3 := Info3 + ', n2: ' + IntToStr(Round(n2));
   Info3 := Info3 + ', Do: ' + FormatFloat('0.00',D0/1000.0) + 'km';
   Info3 := Info3 + ', Vo: ' + FormatFloat('0.00',V0*3.6) + 'km/h';
-  
-// Give out PEV as Warnings
-// PevStartTimeBuffer is set to 30
 
+  
+  // Give out PEV as Warnings
+  // PevStartTimeBuffer is set to 30
   for i:=0 to GetArrayLength(Pilots)-1 do
   begin
     Pilots[i].Warning := ''; 
+    PevFault := false;
     if (Pilots[i].start > 0) Then
     begin	
       if (PEVWaitTime>0) and (PEVStartWindow>0) then   
@@ -430,16 +454,16 @@ begin
 
         for j:=0 to GetArrayLength(Pilots[i].Markers)-1 do
         begin
-          Ignore_Pev:= ((Pilots[i].Markers[j].Tsec-LastPev<=PevStartTimeBuffer) and (Lastpev>0)) or (Pevcount=3) or (Pilots[i].Markers[j].Tsec > Pilots[i].Start); 
+          Ignore_Pev:= ((Pilots[i].Markers[j].Tsec-LastPev<=PevStartTimeBuffer) and (Lastpev>0)) or (Pevcount=3) or (Pilots[i].Markers[j].Tsec > Pilots[i].Start);
           if Ignore_Pev Then
              begin
-               if (ALLUserWrng>=1)Then PevWarning := PevWarning + ' (PEV ignored='+ GetTimestring(Pilots[i].Markers[j].Tsec) +'!), '
+               PevWarning := PevWarning + ' (PEV ignored='+ GetTimestring(Pilots[i].Markers[j].Tsec) +'!), ';
              end
           else
              begin
                PevCount:=PevCount+1;
                LastPev:= Pilots[i].Markers[j].Tsec;
-               if (AllUserWrng>=1) Then PevWarning := PevWarning + 'PEV'+IntTostr(Pevcount)+'='+ GetTimestring(Pilots[i].Markers[j].Tsec)+', ';
+               PevWarning := PevWarning + 'PEV'+IntTostr(Pevcount)+'='+ GetTimestring(Pilots[i].Markers[j].Tsec)+', ';
              end;
         end;
         
@@ -447,22 +471,106 @@ begin
         begin
           PevStartNotValid:=(Trunc(Pilots[i].Start)<(LastPEV+PEVWaitTime)) or (Trunc(Pilots[i].Start)>(LastPEV+PEVWaitTime+PEVStartWindow));
           if PevStartNotValid Then
-            PEVWarning:=PevWarning+' Start='+GetTimestring(Trunc(Pilots[i].Start))+' PEVGate not open!'+', ' 
+            begin
+               PevFault := true;
+               PevWarning:=PevWarning+' Start='+GetTimestring(Trunc(Pilots[i].Start))+' PEV Gate not open!'+', ' ;
+
+               if (Trunc(Pilots[i].Start) < (LastPEV+PEVWaitTime)) Then
+                 PevWarning := PevWarning + '(' + IntToStr(LastPEV+PEVWaitTime - Trunc(Pilots[i].Start)) + 's too early)'
+               else
+                 PevWarning := PevWarning + '(' + IntToStr(Trunc(Pilots[i].Start) - (LastPEV+PEVWaitTime+PEVStartWindow)) + 's too late)'
+
+            end
           else
-            if (Pilots[i].start>=Task.NoStartBeforeTime) and (AllUserWrng>=1) Then
-              PEVWarning:=PevWarning+' Start='+GetTimestring(Trunc(Pilots[i].Start))+' OK'+', '; 
-          Pilots[i].Warning:= PevWarning;
+            if (Pilots[i].start>=Task.NoStartBeforeTime) Then
+              PevWarning:=PevWarning+' Start='+GetTimestring(Trunc(Pilots[i].Start))+' OK'+', '; 
         end
         else
-           PEVWarning:='PEV not found!'+', ';
-
-        Pilots[i].Warning:= PevWarning;   
+           begin
+             PevWarning:='PEV not found!'+', ';
+             PevFault := true;
+           end;
       end;
-      if Pilots[i].start<Task.NoStartBeforeTime then Pilots[i].Warning :=Pilots[i].Warning+ #10'Start='+GetTimestring(Trunc(Pilots[i].start))+' before gate opens!'+', ';     
+      if Pilots[i].start<Task.NoStartBeforeTime then
+      begin
+        PevWarning := PevWarning + #10' Start='+GetTimestring(Trunc(Pilots[i].start))+' before gate opens!'+', ';
+        PevFault := true;
+      end;
+
+      if (PevFault) OR (PevUserWrng = 1) Then
+        Pilots[i].Warning:= Pilots[i].Warning + PevWarning;     
     end;
   end;
- 
-// +/- 10 sec start speed interpolation if variable MaxStartSpeed is set by daytag "MaxStSpd= " to values >0
+
+  // PEV - check and alert for possible starts after chosen one
+  for i:=0 to GetArrayLength(Pilots)-1 do
+  begin
+    for j:=0 to GetArrayLength(Pilots[i].PotStarts)-1 do
+      begin
+        if (Pilots[i].PotStarts[j] > Pilots[i].Start+5) Then
+          Pilots[i].Warning := Pilots[i].Warning+  #10'Possible next start:' +GetTimestring(Trunc(Pilots[i].PotStarts[j]));
+    end;
+  end;
+
+
+  // Cylinder start - check if Pilots[i].start is same as PEV
+  //    (reusing PevFault variable)
+  if CylinderStart = 1 Then
+  begin
+    for i:=0 to GetArrayLength(Pilots)-1 do
+    begin
+      if (Trunc(Pilots[i].start) = -1) Then
+        continue;
+
+      PevFault := true;
+      for j:=0 to GetArrayLength(Pilots[i].Markers)-1 do
+      begin
+        // allow +/-1 second difference due SeeYou Competition bug
+        if (Abs(Pilots[i].Markers[j].Tsec - Trunc(Pilots[i].start)) <= 1) Then
+          PevFault := false
+      end;
+
+      if PevFault = true Then
+        Pilots[i].Warning := Pilots[i].Warning+  #10'Check cylinder start: no PEV found at the start time';
+
+    end;
+  end;
+
+
+
+  // Loss of Height calculation
+  if MaxLoH>=0 Then
+  begin
+    for i:=0 to GetArrayLength(Pilots)-1 do
+    begin
+      if (Pilots[i].finish > 0) and (Pilots[i].start > 0) Then
+      begin
+         for j := 0 to GetArrayLength(Pilots[i].Fixes)-1 do
+         begin
+           if Pilots[i].Fixes[j].Tsec >= Pilots[i].start Then
+           begin
+             if Pilots[i].Fixes[j].Tsec = Pilots[i].start Then	// exact fix
+               PilotStartAlt := Pilots[i].Fixes[j].AltQnh
+             else
+               PilotStartAlt := Pilots[i].Fixes[j-1].AltQnh
+                                + ((Pilots[i].Fixes[j].AltQnh - Pilots[i].Fixes[j-1].AltQnh)/(Pilots[i].Fixes[j].Tsec - Pilots[i].Fixes[j-1].Tsec))
+                                * (Pilots[i].start - Pilots[i].Fixes[j-1].Tsec);
+
+             if (PilotStartAlt - Pilots[i].FinishAlt > MaxLoH) Then
+			 begin
+               Pilots[i].Warning := Pilots[i].Warning+ #10 + 'LoH exceeded (' + IntToStr(Round(PilotStartAlt - Pilots[i].FinishAlt)) + 'm)';
+			 end;
+
+             break;
+           end;
+         end;
+      end;
+    end;
+  end;
+
+
+  // +/- 8 sec start speed interpolation if variable MaxStartSpeed is set by daytag "MaxStSpd= " to values >0
+  // NOTE: this is not exactly compliant with Annex A defition
   if MaxStartSpeed>0 Then 
   for i:=0 to GetArrayLength(Pilots)-1 do
   begin
@@ -473,7 +581,7 @@ begin
 	begin
 	  for j := 0 to GetArrayLength(Pilots[i].Fixes)-1 do
 	  begin
-	    if (Pilots[i].Fixes[j].Tsec >= Pilots[i].start-9) and (Pilots[i].Fixes[j].Tsec <= Pilots[i].start+10) Then
+	    if (Pilots[i].Fixes[j].Tsec >= Pilots[i].start-7) and (Pilots[i].Fixes[j].Tsec <= Pilots[i].start+8) Then
 		begin
 		  PilotStartSpeedSum := PilotStartSpeedSum + Pilots[i].Fixes[j].Gsp;
 		  PilotStartSpeedFixes := PilotStartSpeedFixes + 1;
@@ -484,7 +592,7 @@ begin
 	    PilotStartSpeed := PilotStartSpeedSum / PilotStartSpeedFixes;
       if (Round(PilotStartSpeed*3.6) > MaxStartSpeed) Then begin
         if Pilots[i].Warning <> '' then Pilots[i].Warning := Pilots[i].Warning+ #10;
-	      Pilots[i].Warning := Pilots[i].Warning+ 'Startspeed=' + FloatToStr(Round(PilotStartSpeed*3.6)) + ' km/h-> ' + FloatToStr(Round(PilotStartSpeed*3.6)- MaxStartSpeed) + ' km/h too fast' ;
+	      Pilots[i].Warning := Pilots[i].Warning+ 'Startspeed=' + FloatToStr(Round(PilotStartSpeed*3.6)) + ' km/h-> ' + FloatToStr(Round(PilotStartSpeed*3.6)- MaxStartSpeed) + ' km/h too fast';
       end;
     end;
   end;
